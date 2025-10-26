@@ -52,6 +52,8 @@ export class IconRenderer extends Component {
     iconEl.style.marginRight = "4px"
     iconEl.style.display = "inline-flex"
     iconEl.style.alignItems = "center"
+    iconEl.style.width = "14px"
+    iconEl.style.height = "14px"
     setIcon(iconEl, iconName)
     return iconEl
   }

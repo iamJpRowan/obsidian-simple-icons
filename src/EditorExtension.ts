@@ -24,6 +24,8 @@ class IconWidget extends WidgetType {
     span.style.marginRight = "4px"
     span.style.display = "inline-flex"
     span.style.alignItems = "center"
+    span.style.width = "14px"
+    span.style.height = "14px"
     setIcon(span, this.iconName)
     return span
   }
@@ -66,34 +68,33 @@ export function createEditorExtension(app: App, iconResolver: IconResolver) {
             to,
             enter: (node: any) => {
               // Look for internal links (wikilinks)
-              if (
-                node.name.includes("hmd-internal-link") ||
-                node.name === "link" ||
-                node.name === "internal-link"
-              ) {
+              // In live preview, the link text is in the hmd-internal-link node without brackets
+              if (node.name === "hmd-internal-link") {
                 const linkText = view.state.doc.sliceString(node.from, node.to)
-                const match = linkText.match(/\[\[([^\]|]+)(\|[^\]]+)?\]\]/)
 
-                if (match) {
-                  const linkPath = match[1]
+                // Parse link text - may contain | for alias
+                let linkPath = linkText
+                if (linkText.includes("|")) {
+                  linkPath = linkText.split("|")[0]
+                }
 
-                  // Resolve the linked file
-                  const linkedFile = app.metadataCache.getFirstLinkpathDest(
-                    linkPath,
-                    file.path
-                  )
+                // Resolve the linked file
+                const linkedFile = app.metadataCache.getFirstLinkpathDest(
+                  linkPath,
+                  file.path
+                )
 
-                  if (linkedFile) {
-                    const iconName = iconResolver.getIconForFile(linkedFile)
-                    if (iconName) {
-                      // Position the icon right after the opening [[
-                      const iconPos = node.from + 2
-                      const widget = Decoration.widget({
-                        widget: new IconWidget(iconName),
-                        side: 1,
-                      })
-                      builder.add(iconPos, iconPos, widget)
-                    }
+                if (linkedFile) {
+                  const iconName = iconResolver.getIconForFile(linkedFile)
+
+                  if (iconName) {
+                    // Position the icon at the start of the link text
+                    const iconPos = node.from
+                    const widget = Decoration.widget({
+                      widget: new IconWidget(iconName),
+                      side: 1,
+                    })
+                    builder.add(iconPos, iconPos, widget)
                   }
                 }
               }
