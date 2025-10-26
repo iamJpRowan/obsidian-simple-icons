@@ -166,14 +166,14 @@ export class IconRenderer extends Component {
     const iconName = this.iconResolver.getIconForFile(file)
 
     // Remove existing icon
-    const existingIcon = title.parentElement?.querySelector(".file-icon")
+    const existingIcon = title.querySelector(".file-icon")
     if (existingIcon) {
       existingIcon.remove()
     }
 
     if (iconName) {
       const iconEl = this.createIconElement(iconName)
-      title.parentElement?.prepend(iconEl)
+      title.prepend(iconEl)
     }
   }
 

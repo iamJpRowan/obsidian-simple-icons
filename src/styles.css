@@ -1,3 +1,7 @@
 /* Main plugin styles */
 
-/* Add your custom styles here */
+.inline-title .file-icon svg {
+  width: var(--icon-l);
+  height: var(--icon-l);
+  stroke-width: var(--icon-s-stroke-width);
+}
