@@ -295,9 +295,64 @@ export class IconRenderer extends Component {
   private registerSuggestRendering(): void {
     if (!this.settings.renderInWikilinks) return
 
+    let debounceTimer: NodeJS.Timeout | null = null
+
     // Set up mutation observer for suggestion containers
-    const observer = new MutationObserver(() => {
-      this.updateSuggestionIcons()
+    const observer = new MutationObserver(mutations => {
+      // Efficiently check if any mutation involves suggestion containers
+      // Skip mutations related to search results or file explorer
+      let hasSuggestions = false
+
+      for (const mutation of mutations) {
+        // Skip if mutation is within search results or file explorer
+        if (mutation.target instanceof Element) {
+          const target = mutation.target as Element
+          if (
+            target.closest(".search-results") ||
+            target.closest(".nav-files-container")
+          ) {
+            continue
+          }
+
+          // Check if mutation is within or related to a suggestion container
+          if (
+            target.closest(".suggestion-container") ||
+            target.classList?.contains("suggestion-container") ||
+            target.classList?.contains("suggestion")
+          ) {
+            hasSuggestions = true
+            break
+          }
+        }
+
+        // Check added nodes for suggestion containers or items
+        const addedNodes = Array.from(mutation.addedNodes)
+        for (const node of addedNodes) {
+          if (node instanceof Element) {
+            if (
+              node.classList?.contains("suggestion-container") ||
+              node.classList?.contains("suggestion-item") ||
+              node.querySelector?.(".suggestion-container") !== null ||
+              node.querySelector?.(".suggestion-item") !== null
+            ) {
+              hasSuggestions = true
+              break
+            }
+          }
+        }
+        if (hasSuggestions) break
+      }
+
+      if (hasSuggestions) {
+        // Debounce to avoid excessive updates
+        if (debounceTimer) {
+          clearTimeout(debounceTimer)
+        }
+        debounceTimer = setTimeout(() => {
+          this.updateSuggestionIcons()
+          debounceTimer = null
+        }, 50)
+      }
     })
 
     // Observe the document body for suggestion popups
@@ -320,23 +375,70 @@ export class IconRenderer extends Component {
       const titleEl = suggestion.querySelector(".suggestion-title")
       if (!titleEl) return
 
-      const filePath = suggestion.getAttribute("data-path")
-      if (!filePath) return
+      // Check if icon already exists in the title element
+      const existingIcon = titleEl.querySelector(".file-icon")
+
+      // Try to get file path from data-path attribute
+      let filePath = suggestion.getAttribute("data-path")
+
+      // If data-path doesn't exist, try to get it from the suggestion content
+      if (!filePath) {
+        const auxEl = suggestion.querySelector(".suggestion-aux")
+        if (auxEl) {
+          filePath = auxEl.textContent?.trim() || null
+        }
+      }
+
+      // If still no file path, try getting it from the title text
+      if (!filePath) {
+        const titleText = titleEl.textContent?.trim()
+        if (titleText) {
+          // Remove icon text if it exists in the title
+          const titleTextClean = titleText.replace(/^\s*$/, "").trim()
+          if (titleTextClean) {
+            // Try to resolve the file by title
+            const file = this.app.metadataCache.getFirstLinkpathDest(
+              titleTextClean,
+              ""
+            )
+            if (file) {
+              filePath = file.path
+            }
+          }
+        }
+      }
+
+      if (!filePath) {
+        // No file path found, remove any existing icon
+        if (existingIcon) {
+          existingIcon.remove()
+        }
+        return
+      }
 
       const file = this.app.vault.getAbstractFileByPath(filePath)
-      if (!(file instanceof TFile)) return
+      if (!(file instanceof TFile)) {
+        // Not a valid file, remove any existing icon
+        if (existingIcon) {
+          existingIcon.remove()
+        }
+        return
+      }
 
       const iconName = this.iconResolver.getIconForFile(file)
 
-      // Remove existing icon
-      const existingIcon = titleEl.querySelector(".file-icon")
-      if (existingIcon) {
-        existingIcon.remove()
-      }
-
       if (iconName) {
-        const iconEl = this.createIconElement(iconName)
-        titleEl.prepend(iconEl)
+        // Only add/update icon if it doesn't exist or is different
+        if (!existingIcon) {
+          const iconEl = this.createIconElement(iconName)
+          titleEl.prepend(iconEl)
+        }
+        // If icon exists, we keep it (assume it's correct to avoid flicker)
+      } else {
+        // No icon needed, remove if exists
+        if (existingIcon) {
+          existingIcon.remove()
+        }
       }
     })
   }
