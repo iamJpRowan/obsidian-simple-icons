@@ -1,9 +1,9 @@
 {
-  "id": "simple-icons",
-  "name": "Simple Icons",
+  "id": "lucide-icons",
+  "name": "Lucide Icons",
   "version": "0.1.0",
   "minAppVersion": "0.15.0",
-  "description": "Sets file icons based on a Lucide icon name stored in a frontmatter property.",
+  "description": "Associate Lucide icons to markdown files throughout Obsidian UI via frontmatter, tags, or folders.",
   "author": "Jp Rowan",
   "authorUrl": "https://github.com/iamJpRowan",
   "fundingUrl": "",

@@ -1,25 +1,88 @@
-import { Plugin } from "obsidian"
+import { Plugin, TFile } from "obsidian"
+import { createEditorExtension } from "./EditorExtension"
+import { IconRenderer } from "./IconRenderer"
+import { IconResolver } from "./IconResolver"
+import { LucideIconsSettingTab } from "./SettingsTab"
+import { DEFAULT_SETTINGS, PluginSettings } from "./types"
 
-export default class MyPlugin extends Plugin {
+export default class LucideIconsPlugin extends Plugin {
+  settings: PluginSettings
+  iconResolver: IconResolver
+  iconRenderer: IconRenderer
+
   async onload() {
-    console.log("Loading plugin")
+    await this.loadSettings()
 
-    // Add a ribbon icon
-    this.addRibbonIcon("dice", "Sample Plugin", (evt: MouseEvent) => {
-      console.log("Ribbon icon clicked")
+    // Initialize core components
+    this.iconResolver = new IconResolver(this.app, this.settings)
+    this.iconRenderer = new IconRenderer(
+      this.app,
+      this.iconResolver,
+      this.settings
+    )
+
+    // Register markdown post processor for wikilinks in reading mode
+    this.registerMarkdownPostProcessor((el, ctx) => {
+      this.iconRenderer.renderWikilinkIcon(el, ctx)
     })
 
-    // Add a simple command
-    this.addCommand({
-      id: "sample-command",
-      name: "Sample Command",
-      callback: () => {
-        console.log("Sample command executed")
-      },
-    })
+    // Register editor extension for live preview mode
+    this.registerEditorExtension(
+      createEditorExtension(this.app, this.iconResolver)
+    )
+
+    // Initialize rendering
+    this.iconRenderer.initializeRendering()
+
+    // Register event listeners for cache invalidation
+    this.registerEvent(
+      this.app.metadataCache.on("changed", file => {
+        this.iconResolver.invalidateFile(file)
+      })
+    )
+
+    this.registerEvent(
+      this.app.vault.on("rename", (file, oldPath) => {
+        if (file instanceof TFile) {
+          this.iconResolver.clearCache()
+        }
+      })
+    )
+
+    this.registerEvent(
+      this.app.vault.on("delete", file => {
+        if (file instanceof TFile) {
+          this.iconResolver.invalidateFile(file)
+        }
+      })
+    )
+
+    // Add settings tab
+    this.addSettingTab(new LucideIconsSettingTab(this.app, this))
   }
 
   onunload() {
-    console.log("Unloading plugin")
+    this.iconRenderer.unload()
+  }
+
+  async loadSettings() {
+    this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData())
+  }
+
+  async saveSettings() {
+    await this.saveData(this.settings)
+  }
+
+  /**
+   * Reload renderer after settings change
+   */
+  reloadRenderer() {
+    this.iconRenderer.unload()
+    this.iconRenderer = new IconRenderer(
+      this.app,
+      this.iconResolver,
+      this.settings
+    )
+    this.iconRenderer.initializeRendering()
   }
 }
