@@ -49,11 +49,6 @@ export class IconRenderer extends Component {
   private createIconElement(iconName: string): HTMLElement {
     const iconEl = document.createElement("span")
     iconEl.addClass("file-icon")
-    iconEl.style.marginRight = "4px"
-    iconEl.style.display = "inline-flex"
-    iconEl.style.alignItems = "center"
-    iconEl.style.width = "14px"
-    iconEl.style.height = "14px"
     setIcon(iconEl, iconName)
     return iconEl
   }

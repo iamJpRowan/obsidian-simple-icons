@@ -35,14 +35,9 @@ export class IconPickerModal extends FuzzySuggestModal<string> {
     el.empty()
 
     const container = el.createDiv({ cls: "icon-picker-suggestion" })
-    container.style.display = "flex"
-    container.style.alignItems = "center"
-    container.style.gap = "8px"
 
     // Icon preview
     const iconEl = container.createSpan({ cls: "icon-picker-icon" })
-    iconEl.style.display = "inline-flex"
-    iconEl.style.alignItems = "center"
     setIcon(iconEl, iconName)
 
     // Icon name

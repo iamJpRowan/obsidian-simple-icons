@@ -21,11 +21,6 @@ class IconWidget extends WidgetType {
   toDOM(): HTMLElement {
     const span = document.createElement("span")
     span.addClass("file-icon")
-    span.style.marginRight = "4px"
-    span.style.display = "inline-flex"
-    span.style.alignItems = "center"
-    span.style.width = "14px"
-    span.style.height = "14px"
     setIcon(span, this.iconName)
     return span
   }

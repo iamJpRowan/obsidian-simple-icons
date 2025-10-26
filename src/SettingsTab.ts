@@ -189,7 +189,7 @@ export class LucideIconsSettingTab extends PluginSettingTab {
             this.plugin.iconResolver.clearCache()
             this.display()
           })
-        text.inputEl.style.width = "120px"
+        text.inputEl.addClass("icon-name-input")
       })
       .addButton(button => {
         if (mapping.icon) {
@@ -326,7 +326,7 @@ export class LucideIconsSettingTab extends PluginSettingTab {
             this.plugin.iconResolver.clearCache()
             this.display()
           })
-        text.inputEl.style.width = "120px"
+        text.inputEl.addClass("icon-name-input")
       })
       .addButton(button => {
         if (mapping.icon) {
