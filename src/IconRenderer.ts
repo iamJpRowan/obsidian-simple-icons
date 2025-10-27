@@ -233,20 +233,97 @@ export class IconRenderer extends Component {
   }
 
   /**
-   * Update icon for a single file in file explorer
+   * Update icon for a single file across all locations (explorer, tabs, titles, wikilinks)
    */
   updateSingleFileIcon(file: TFile): void {
-    if (!this.settings.renderInFileLists) return
-
-    // Find the specific nav-file-title element
-    const navFiles = Array.from(document.querySelectorAll(".nav-file-title"))
-    for (const navFile of navFiles) {
-      const path = navFile.getAttribute("data-path")
-      if (path === file.path) {
-        this.updateNavFileIcon(navFile as HTMLElement)
-        break
+    // Update file explorer icon
+    if (this.settings.renderInFileLists) {
+      const navFiles = Array.from(document.querySelectorAll(".nav-file-title"))
+      for (const navFile of navFiles) {
+        const path = navFile.getAttribute("data-path")
+        if (path === file.path) {
+          this.updateNavFileIcon(navFile as HTMLElement)
+          break
+        }
       }
     }
+
+    // Update tab header for this file
+    if (this.settings.renderInFileView) {
+      const leaves = this.app.workspace.getLeavesOfType("markdown")
+      for (const leaf of leaves) {
+        if (leaf.view instanceof MarkdownView && leaf.view.file) {
+          if (leaf.view.file.path === file.path) {
+            this.updateTabHeaderForLeaf(leaf)
+            break
+          }
+        }
+      }
+
+      // Update inline title for this file
+      const activeLeaf = this.app.workspace.activeLeaf
+      if (activeLeaf?.view instanceof MarkdownView && activeLeaf.view.file) {
+        if (activeLeaf.view.file.path === file.path) {
+          const inlineTitles = document.querySelectorAll(".inline-title")
+          inlineTitles.forEach(title => {
+            this.updateInlineTitleIcon(title as HTMLElement)
+          })
+        }
+      }
+    }
+
+    // Update wikilinks in all other files that reference this file
+    if (this.settings.renderInWikilinks) {
+      this.updateWikilinksForFile(file)
+    }
+  }
+
+  /**
+   * Update all wikilinks that reference a specific file across all open views
+   */
+  private updateWikilinksForFile(targetFile: TFile): void {
+    // Update wikilinks in all markdown views
+    const leaves = this.app.workspace.getLeavesOfType("markdown")
+    leaves.forEach(leaf => {
+      const view = leaf.view
+      if (view instanceof MarkdownView && view.file) {
+        const file = view.file
+        const contentEl = view.contentEl || view.containerEl
+        if (!contentEl) return
+
+        // Find all wikilinks in this view
+        const links = contentEl.querySelectorAll(
+          "a.internal-link, div.internal-link"
+        )
+        links.forEach(link => {
+          const href =
+            link.getAttribute("href") || link.getAttribute("data-href")
+          if (!href) return
+
+          // Resolve the linked file
+          const linkedFile = this.app.metadataCache.getFirstLinkpathDest(
+            href,
+            file.path
+          )
+
+          // If this link points to our target file, update the icon
+          if (linkedFile && linkedFile.path === targetFile.path) {
+            const iconName = this.iconResolver.getIconForFile(targetFile)
+
+            // Remove existing icon
+            const existingIcon = link.querySelector(".file-icon")
+            if (existingIcon) {
+              existingIcon.remove()
+            }
+
+            if (iconName) {
+              const iconEl = this.createIconElement(iconName)
+              link.prepend(iconEl)
+            }
+          }
+        })
+      }
+    })
   }
 
   /**

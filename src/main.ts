@@ -1,5 +1,5 @@
 import { Plugin, TFile } from "obsidian"
-import { createEditorExtension } from "./EditorExtension"
+import { createEditorExtension, triggerIconRefresh } from "./EditorExtension"
 import { IconRenderer } from "./IconRenderer"
 import { IconResolver } from "./IconResolver"
 import { LucideIconsSettingTab } from "./SettingsTab"
@@ -42,6 +42,8 @@ export default class LucideIconsPlugin extends Plugin {
         // Update only this specific file in the UI
         if (file instanceof TFile) {
           this.iconRenderer.updateSingleFileIcon(file)
+          // Trigger editor view updates for live preview wikilinks
+          triggerIconRefresh(this.app)
         }
       })
     )
