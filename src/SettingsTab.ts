@@ -194,22 +194,12 @@ export class LucideIconsSettingTab extends PluginSettingTab {
       .addButton(button => {
         if (mapping.icon) {
           setIcon(button.buttonEl, mapping.icon)
+          button.setTooltip("Icon preview - type icon name in field above")
         } else {
-          button.setButtonText("Pick")
+          button.setButtonText("Icon")
+          button.setTooltip("Type icon name in field above, e.g. 'home', 'folder', 'star'")
         }
-        button.setTooltip("Pick icon")
-        button.onClick(() => {
-          new IconPickerModal(
-            this.app,
-            this.plugin.iconResolver,
-            async iconName => {
-              this.plugin.settings.tagMappings[index].icon = iconName
-              await this.plugin.saveSettings()
-              this.plugin.iconResolver.clearCache()
-              this.display()
-            }
-          ).open()
-        })
+        button.setDisabled(true) // Display only
       })
       .addExtraButton(button =>
         button
@@ -331,22 +321,12 @@ export class LucideIconsSettingTab extends PluginSettingTab {
       .addButton(button => {
         if (mapping.icon) {
           setIcon(button.buttonEl, mapping.icon)
+          button.setTooltip("Icon preview - type icon name in field above")
         } else {
-          button.setButtonText("Pick")
+          button.setButtonText("Icon")
+          button.setTooltip("Type icon name in field above, e.g. 'home', 'folder', 'star'")
         }
-        button.setTooltip("Pick icon")
-        button.onClick(() => {
-          new IconPickerModal(
-            this.app,
-            this.plugin.iconResolver,
-            async iconName => {
-              this.plugin.settings.folderMappings[index].icon = iconName
-              await this.plugin.saveSettings()
-              this.plugin.iconResolver.clearCache()
-              this.display()
-            }
-          ).open()
-        })
+        button.setDisabled(true) // Display only
       })
       .addExtraButton(button =>
         button

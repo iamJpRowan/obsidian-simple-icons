@@ -5,183 +5,11 @@ export class IconResolver {
   private app: App
   private settings: PluginSettings
   private cache: IconCache
-  private validIconNames: Set<string>
 
   constructor(app: App, settings: PluginSettings) {
     this.app = app
     this.settings = settings
     this.cache = {}
-    // Initialize with a basic set - will be populated lazily
-    this.validIconNames = this.getLucideIconNames()
-  }
-
-  /**
-   * Get list of valid Lucide icon names
-   * Uses a curated list of common Lucide icons
-   */
-  private getLucideIconNames(): Set<string> {
-    // Common Lucide icons that are available in Obsidian
-    const commonIcons = [
-      "home",
-      "folder",
-      "file",
-      "file-text",
-      "book",
-      "book-open",
-      "bookmark",
-      "calendar",
-      "calendar-days",
-      "clock",
-      "timer",
-      "alarm-clock",
-      "star",
-      "heart",
-      "flag",
-      "tag",
-      "hash",
-      "at-sign",
-      "check",
-      "check-circle",
-      "x",
-      "x-circle",
-      "alert-circle",
-      "alert-triangle",
-      "info",
-      "settings",
-      "sliders",
-      "tool",
-      "wrench",
-      "hammer",
-      "user",
-      "users",
-      "user-plus",
-      "user-check",
-      "mail",
-      "inbox",
-      "send",
-      "message-circle",
-      "message-square",
-      "search",
-      "zoom-in",
-      "zoom-out",
-      "filter",
-      "edit",
-      "edit-2",
-      "edit-3",
-      "pen-tool",
-      "pen-line",
-      "trash",
-      "trash-2",
-      "archive",
-      "inbox",
-      "save",
-      "download",
-      "upload",
-      "share",
-      "share-2",
-      "copy",
-      "clipboard",
-      "scissors",
-      "paperclip",
-      "link",
-      "link-2",
-      "external-link",
-      "anchor",
-      "image",
-      "file-image",
-      "file-video",
-      "file-audio",
-      "code",
-      "code-2",
-      "terminal",
-      "command",
-      "database",
-      "server",
-      "cpu",
-      "folder-open",
-      "folder-plus",
-      "folder-minus",
-      "folder-archive",
-      "arrow-right",
-      "arrow-left",
-      "arrow-up",
-      "arrow-down",
-      "chevron-right",
-      "chevron-left",
-      "chevron-up",
-      "chevron-down",
-      "plus",
-      "minus",
-      "circle",
-      "square",
-      "triangle",
-      "eye",
-      "eye-off",
-      "lock",
-      "unlock",
-      "key",
-      "bell",
-      "bell-off",
-      "volume",
-      "volume-2",
-      "volume-x",
-      "sun",
-      "moon",
-      "cloud",
-      "zap",
-      "droplet",
-      "flame",
-      "map",
-      "map-pin",
-      "compass",
-      "globe",
-      "navigation",
-      "list",
-      "list-ordered",
-      "layout",
-      "grid",
-      "columns",
-      "maximize",
-      "minimize",
-      "move",
-      "rotate-cw",
-      "rotate-ccw",
-      "refresh-cw",
-      "loader",
-      "more-horizontal",
-      "more-vertical",
-      "play",
-      "pause",
-      "stop",
-      "skip-forward",
-      "skip-back",
-      "award",
-      "target",
-      "trophy",
-      "gift",
-      "package",
-      "shopping-cart",
-      "shopping-bag",
-      "credit-card",
-      "dollar-sign",
-      "briefcase",
-      "hard-drive",
-      "monitor",
-      "smartphone",
-      "tablet",
-      "wifi",
-      "bluetooth",
-      "cast",
-      "radio",
-      "tv",
-      "camera",
-      "video",
-      "mic",
-      "headphones",
-      "speaker",
-    ]
-
-    return new Set(commonIcons)
   }
 
   /**
@@ -258,7 +86,7 @@ export class IconResolver {
     const property = this.settings.frontmatterProperty || "icon"
     const iconName = metadata.frontmatter?.[property]
 
-    if (typeof iconName === "string" && this.isValidIcon(iconName)) {
+    if (typeof iconName === "string" && iconName.trim() !== "") {
       return iconName
     }
 
@@ -278,7 +106,11 @@ export class IconResolver {
 
     // Check each tag mapping in priority order
     for (const mapping of this.settings.tagMappings) {
-      if (fileTags.includes(mapping.tag) && this.isValidIcon(mapping.icon)) {
+      if (
+        fileTags.includes(mapping.tag) &&
+        mapping.icon &&
+        mapping.icon.trim() !== ""
+      ) {
         return mapping.icon
       }
     }
@@ -305,7 +137,7 @@ export class IconResolver {
         const depth = folderPath.split("/").length
 
         if (!deepestMatch || depth > deepestMatch.depth) {
-          if (this.isValidIcon(mapping.icon)) {
+          if (mapping.icon && mapping.icon.trim() !== "") {
             deepestMatch = { depth, icon: mapping.icon }
           }
         }
@@ -316,16 +148,13 @@ export class IconResolver {
   }
 
   /**
-   * Validates if an icon name exists in Lucide icon set
-   */
-  isValidIcon(iconName: string): boolean {
-    return this.validIconNames.has(iconName)
-  }
-
-  /**
-   * Get all valid Lucide icon names
+   * Get all valid icon names for the picker
+   * Returns an empty array - no static list to maintain.
+   * Users type icon names directly in the text field.
    */
   getValidIconNames(): string[] {
-    return Array.from(this.validIconNames)
+    // Return empty array - users type icon names manually in text input
+    // No maintenance required
+    return []
   }
 }

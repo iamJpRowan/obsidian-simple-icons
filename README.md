@@ -7,7 +7,7 @@ Associate beautiful Lucide icons with your markdown files and see them throughou
 - **Multiple Association Methods**: Configure icons using frontmatter properties, tags, or folder paths
 - **Priority System**: Frontmatter > Tags > Folders (customize which methods are active)
 - **Universal Rendering**: Icons appear in wikilinks, file views, tabs, file explorer, and search results
-- **Lucide Icon Library**: Access to 1000+ beautiful, open-source icons
+- **Full Lucide Icon Support**: Access to all Lucide icons available in Obsidian via the built-in icon system
 - **Visual Icon Picker**: Search and select icons with a built-in picker
 - **Performance Optimized**: Intelligent caching and efficient updates
 
@@ -163,7 +163,7 @@ Toggle: Settings → "Render in file lists"
 **Tag Mapping Controls:**
 
 - **↑/↓ Arrows**: Reorder priority (top = highest priority)
-- **Pick Button**: Open icon picker modal
+- **Icon Preview**: Shows the current icon (for visual reference)
 - **🗑️ Delete**: Remove mapping
 
 #### Folders
@@ -175,7 +175,7 @@ Toggle: Settings → "Render in file lists"
 
 **Folder Mapping Controls:**
 
-- **Pick Button**: Open icon picker modal
+- **Icon Preview**: Shows the current icon (for visual reference)
 - **🗑️ Delete**: Remove mapping
 
 ## Finding Icon Names
@@ -188,9 +188,9 @@ Toggle: Settings → "Render in file lists"
 4. Search for an icon by name
 5. Click to select
 
-### Lucide Icon Reference
+**Note:** The icon picker displays all available icons supported by Obsidian. You can also manually type any icon name if you know it.
 
-Browse all available icons at: [lucide.dev/icons](https://lucide.dev/icons)
+Browse all available Lucide icons at: [lucide.dev/icons](https://lucide.dev/icons)
 
 Common icon names:
 

@@ -16,9 +16,7 @@
   ],
   "author": "",
   "license": "MIT",
-  "dependencies": {
-    "lucide-static": "^0.460.0"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@types/node": "^16.11.6",
     "@typescript-eslint/eslint-plugin": "5.29.0",
