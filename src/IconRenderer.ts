@@ -14,6 +14,7 @@ export class IconRenderer extends Component {
   private iconResolver: IconResolver
   private settings: PluginSettings
   private observers: MutationObserver[] = []
+  private debounceTimers: Map<string, NodeJS.Timeout> = new Map()
 
   constructor(app: App, iconResolver: IconResolver, settings: PluginSettings) {
     super()
@@ -42,6 +43,8 @@ export class IconRenderer extends Component {
   onunload(): void {
     this.observers.forEach(observer => observer.disconnect())
     this.observers = []
+    this.debounceTimers.forEach(timer => clearTimeout(timer))
+    this.debounceTimers.clear()
   }
 
   /**
@@ -66,6 +69,9 @@ export class IconRenderer extends Component {
       const href = link.getAttribute("href") || link.getAttribute("data-href")
       if (!href) return
 
+      // Check if icon already exists
+      if (link.querySelector(".file-icon")) return
+
       // Resolve the file from the link
       const file = this.app.metadataCache.getFirstLinkpathDest(
         href,
@@ -75,9 +81,6 @@ export class IconRenderer extends Component {
 
       const iconName = this.iconResolver.getIconForFile(file)
       if (!iconName) return
-
-      // Check if icon already exists
-      if (link.querySelector(".file-icon")) return
 
       // Create and prepend icon
       const iconEl = this.createIconElement(iconName)
@@ -94,18 +97,22 @@ export class IconRenderer extends Component {
     // Use workspace event to detect when files are opened or changed
     this.registerEvent(
       this.app.workspace.on("active-leaf-change", () => {
-        this.updateFileViewIcons()
+        this.debouncedUpdate("fileview", () => {
+          this.updateFileViewIcons()
+        })
       })
     )
 
     this.registerEvent(
       this.app.workspace.on("layout-change", () => {
-        this.updateFileViewIcons()
+        this.debouncedUpdate("fileview", () => {
+          this.updateFileViewIcons()
+        })
       })
     )
 
-    // Initial render
-    setTimeout(() => this.updateFileViewIcons(), 100)
+    // Single initial render
+    setTimeout(() => this.updateFileViewIcons(), 200)
   }
 
   /**
@@ -194,28 +201,16 @@ export class IconRenderer extends Component {
 
   /**
    * Register file list rendering (explorer and search)
+   * Optimized to use MutationObserver only for the file explorer container
    */
   private registerFileListRendering(): void {
     if (!this.settings.renderInFileLists) return
 
-    // Initial render
+    // Single initial render after container is ready
     setTimeout(() => {
       this.updateFileExplorerIcons()
       this.setupFileExplorerObserver()
     }, 500)
-
-    // Update on file changes
-    this.registerEvent(
-      this.app.vault.on("rename", (file, oldPath) => {
-        setTimeout(() => this.updateFileExplorerIcons(), 100)
-      })
-    )
-
-    this.registerEvent(
-      this.app.metadataCache.on("changed", file => {
-        setTimeout(() => this.updateFileExplorerIcons(), 100)
-      })
-    )
   }
 
   /**
@@ -235,6 +230,23 @@ export class IconRenderer extends Component {
     searchResults.forEach(result => {
       this.updateSearchResultIcon(result as HTMLElement)
     })
+  }
+
+  /**
+   * Update icon for a single file in file explorer
+   */
+  updateSingleFileIcon(file: TFile): void {
+    if (!this.settings.renderInFileLists) return
+
+    // Find the specific nav-file-title element
+    const navFiles = Array.from(document.querySelectorAll(".nav-file-title"))
+    for (const navFile of navFiles) {
+      const path = navFile.getAttribute("data-path")
+      if (path === file.path) {
+        this.updateNavFileIcon(navFile as HTMLElement)
+        break
+      }
+    }
   }
 
   /**
@@ -290,15 +302,23 @@ export class IconRenderer extends Component {
 
   /**
    * Setup mutation observer for file explorer
+   * Optimized: Only observes .nav-files-container, not the entire document
    */
   private setupFileExplorerObserver(): void {
     const fileExplorer = document.querySelector(".nav-files-container")
-    if (!fileExplorer) return
+    if (!fileExplorer) {
+      // Retry after a delay if container not ready
+      setTimeout(() => this.setupFileExplorerObserver(), 500)
+      return
+    }
 
     const observer = new MutationObserver(() => {
-      this.updateFileExplorerIcons()
+      this.debouncedUpdate("fileexplorer", () => {
+        this.updateFileExplorerIcons()
+      })
     })
 
+    // Only observe the file explorer container, not document.body
     observer.observe(fileExplorer, {
       childList: true,
       subtree: true,
@@ -309,49 +329,46 @@ export class IconRenderer extends Component {
 
   /**
    * Register suggestion rendering (autofill)
+   * Optimized: Observes document.body but filters aggressively
    */
   private registerSuggestRendering(): void {
     if (!this.settings.renderInWikilinks) return
 
-    let debounceTimer: NodeJS.Timeout | null = null
-
-    // Set up mutation observer for suggestion containers
     const observer = new MutationObserver(mutations => {
-      // Efficiently check if any mutation involves suggestion containers
-      // Skip mutations related to search results or file explorer
+      // Fast filter: check if any mutation involves suggestions
       let hasSuggestions = false
 
       for (const mutation of mutations) {
-        // Skip if mutation is within search results or file explorer
         if (mutation.target instanceof Element) {
           const target = mutation.target as Element
+
+          // Fast early exit for non-suggestion areas
           if (
             target.closest(".search-results") ||
-            target.closest(".nav-files-container")
+            target.closest(".nav-files-container") ||
+            target.closest(".metadata-container")
           ) {
             continue
           }
 
-          // Check if mutation is within or related to a suggestion container
+          // Check for suggestion containers
           if (
-            target.closest(".suggestion-container") ||
             target.classList?.contains("suggestion-container") ||
-            target.classList?.contains("suggestion")
+            target.classList?.contains("suggestion-item") ||
+            target.closest(".suggestion-container")
           ) {
             hasSuggestions = true
             break
           }
         }
 
-        // Check added nodes for suggestion containers or items
-        const addedNodes = Array.from(mutation.addedNodes)
-        for (const node of addedNodes) {
+        // Check added nodes
+        for (const node of Array.from(mutation.addedNodes)) {
           if (node instanceof Element) {
             if (
               node.classList?.contains("suggestion-container") ||
               node.classList?.contains("suggestion-item") ||
-              node.querySelector?.(".suggestion-container") !== null ||
-              node.querySelector?.(".suggestion-item") !== null
+              node.querySelector?.(".suggestion-container")
             ) {
               hasSuggestions = true
               break
@@ -362,18 +379,13 @@ export class IconRenderer extends Component {
       }
 
       if (hasSuggestions) {
-        // Debounce to avoid excessive updates
-        if (debounceTimer) {
-          clearTimeout(debounceTimer)
-        }
-        debounceTimer = setTimeout(() => {
+        this.debouncedUpdate("suggestions", () => {
           this.updateSuggestionIcons()
-          debounceTimer = null
-        }, 50)
+        })
       }
     })
 
-    // Observe the document body for suggestion popups
+    // Observe document.body for suggestion popups (unavoidable - they appear dynamically)
     observer.observe(document.body, {
       childList: true,
       subtree: true,
@@ -393,8 +405,8 @@ export class IconRenderer extends Component {
       const titleEl = suggestion.querySelector(".suggestion-title")
       if (!titleEl) return
 
-      // Check if icon already exists in the title element
-      const existingIcon = titleEl.querySelector(".file-icon")
+      // Skip if icon already exists
+      if (titleEl.querySelector(".file-icon")) return
 
       // Try to get file path from data-path attribute
       let filePath = suggestion.getAttribute("data-path")
@@ -411,96 +423,61 @@ export class IconRenderer extends Component {
       if (!filePath) {
         const titleText = titleEl.textContent?.trim()
         if (titleText) {
-          // Remove icon text if it exists in the title
-          const titleTextClean = titleText.replace(/^\s*$/, "").trim()
-          if (titleTextClean) {
-            // Try to resolve the file by title
-            const file = this.app.metadataCache.getFirstLinkpathDest(
-              titleTextClean,
-              ""
-            )
-            if (file) {
-              filePath = file.path
-            }
+          const file = this.app.metadataCache.getFirstLinkpathDest(
+            titleText,
+            ""
+          )
+          if (file) {
+            filePath = file.path
           }
         }
       }
 
-      if (!filePath) {
-        // No file path found, remove any existing icon
-        if (existingIcon) {
-          existingIcon.remove()
-        }
-        return
-      }
+      if (!filePath) return
 
       const file = this.app.vault.getAbstractFileByPath(filePath)
-      if (!(file instanceof TFile)) {
-        // Not a valid file, remove any existing icon
-        if (existingIcon) {
-          existingIcon.remove()
-        }
-        return
-      }
+      if (!(file instanceof TFile)) return
 
       const iconName = this.iconResolver.getIconForFile(file)
+      if (!iconName) return
 
-      if (iconName) {
-        // Only add/update icon if it doesn't exist or is different
-        if (!existingIcon) {
-          const iconEl = this.createIconElement(iconName)
-          titleEl.prepend(iconEl)
-        }
-        // If icon exists, we keep it (assume it's correct to avoid flicker)
-      } else {
-        // No icon needed, remove if exists
-        if (existingIcon) {
-          existingIcon.remove()
-        }
-      }
+      // Create and prepend icon
+      const iconEl = this.createIconElement(iconName)
+      titleEl.prepend(iconEl)
     })
   }
 
   /**
    * Register metadata link rendering (properties/frontmatter)
+   * Optimized: Only observes metadata containers if they exist
    */
   private registerMetadataLinkRendering(): void {
     if (!this.settings.renderInWikilinks) return
 
-    let debounceTimer: NodeJS.Timeout | null = null
-
-    // Set up mutation observer for metadata link elements
     const observer = new MutationObserver(mutations => {
       let hasMetadata = false
 
       for (const mutation of mutations) {
-        // Check if mutation is within or involves metadata-link-inner elements
         if (mutation.target instanceof Element) {
           const target = mutation.target as Element
           if (
             target.closest(".metadata-link-inner") ||
             target.closest(".metadata-container") ||
-            target.closest(".metadata-property") ||
             target.classList?.contains("metadata-link-inner") ||
-            target.classList?.contains("metadata-container") ||
-            target.classList?.contains("metadata-property")
+            target.classList?.contains("metadata-container")
           ) {
             hasMetadata = true
             break
           }
         }
 
-        // Check added nodes for metadata elements
-        const addedNodes = Array.from(mutation.addedNodes)
-        for (const node of addedNodes) {
+        // Check added nodes
+        for (const node of Array.from(mutation.addedNodes)) {
           if (node instanceof Element) {
             if (
               node.classList?.contains("metadata-link-inner") ||
               node.classList?.contains("metadata-container") ||
-              node.classList?.contains("metadata-property") ||
-              node.querySelector?.(".metadata-link-inner") !== null ||
-              node.querySelector?.(".metadata-container") !== null ||
-              node.querySelector?.(".metadata-property") !== null
+              node.querySelector?.(".metadata-link-inner")
             ) {
               hasMetadata = true
               break
@@ -511,18 +488,13 @@ export class IconRenderer extends Component {
       }
 
       if (hasMetadata) {
-        // Debounce to avoid excessive updates
-        if (debounceTimer) {
-          clearTimeout(debounceTimer)
-        }
-        debounceTimer = setTimeout(() => {
+        this.debouncedUpdate("metadata", () => {
           this.updateMetadataLinkIcons()
-          debounceTimer = null
-        }, 50)
+        })
       }
     })
 
-    // Observe the document body for metadata changes
+    // Observe document.body for metadata changes (unavoidable - properties panel is dynamic)
     observer.observe(document.body, {
       childList: true,
       subtree: true,
@@ -531,7 +503,7 @@ export class IconRenderer extends Component {
     this.observers.push(observer)
 
     // Initial render
-    setTimeout(() => this.updateMetadataLinkIcons(), 100)
+    setTimeout(() => this.updateMetadataLinkIcons(), 200)
 
     // Also update on active leaf change
     this.registerEvent(
@@ -557,10 +529,10 @@ export class IconRenderer extends Component {
     )
 
     metadataLinks.forEach(link => {
-      // Check if icon already exists
+      // Skip if icon already exists
       if (link.querySelector(".file-icon")) return
 
-      // Get the data-href attribute (metadata links use data-href, not href)
+      // Get the data-href attribute
       const href = link.getAttribute("data-href")
       if (!href) return
 
@@ -578,5 +550,26 @@ export class IconRenderer extends Component {
       const iconEl = this.createIconElement(iconName)
       link.prepend(iconEl)
     })
+  }
+
+  /**
+   * Debounce utility to prevent excessive updates
+   */
+  private debouncedUpdate(
+    key: string,
+    updateFn: () => void,
+    delay: number = 100
+  ): void {
+    const existingTimer = this.debounceTimers.get(key)
+    if (existingTimer) {
+      clearTimeout(existingTimer)
+    }
+
+    const timer = setTimeout(() => {
+      updateFn()
+      this.debounceTimers.delete(key)
+    }, delay)
+
+    this.debounceTimers.set(key, timer)
   }
 }
