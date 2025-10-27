@@ -2,10 +2,10 @@ import { Plugin, TFile } from "obsidian"
 import { createEditorExtension, triggerIconRefresh } from "./EditorExtension"
 import { IconRenderer } from "./IconRenderer"
 import { IconResolver } from "./IconResolver"
-import { LucideIconsSettingTab } from "./SettingsTab"
+import { SimpleIconsSettingTab } from "./SettingsTab"
 import { DEFAULT_SETTINGS, PluginSettings } from "./types"
 
-export default class LucideIconsPlugin extends Plugin {
+export default class SimpleIconsPlugin extends Plugin {
   settings: PluginSettings
   iconResolver: IconResolver
   iconRenderer: IconRenderer
@@ -80,7 +80,7 @@ export default class LucideIconsPlugin extends Plugin {
     )
 
     // Add settings tab
-    this.addSettingTab(new LucideIconsSettingTab(this.app, this))
+    this.addSettingTab(new SimpleIconsSettingTab(this.app, this))
   }
 
   onunload() {

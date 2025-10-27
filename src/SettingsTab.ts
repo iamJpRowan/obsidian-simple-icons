@@ -1,12 +1,11 @@
 import { App, PluginSettingTab, Setting, setIcon } from "obsidian"
-import { IconPickerModal } from "./IconPickerModal"
-import LucideIconsPlugin from "./main"
+import SimpleIconsPlugin from "./main"
 import { FolderMapping, TagMapping } from "./types"
 
-export class LucideIconsSettingTab extends PluginSettingTab {
-  plugin: LucideIconsPlugin
+export class SimpleIconsSettingTab extends PluginSettingTab {
+  plugin: SimpleIconsPlugin
 
-  constructor(app: App, plugin: LucideIconsPlugin) {
+  constructor(app: App, plugin: SimpleIconsPlugin) {
     super(app, plugin)
     this.plugin = plugin
   }
@@ -15,7 +14,7 @@ export class LucideIconsSettingTab extends PluginSettingTab {
     const { containerEl } = this
     containerEl.empty()
 
-    containerEl.createEl("h2", { text: "Lucide Icons Settings" })
+    containerEl.createEl("h2", { text: "Simple Icons Settings" })
 
     // Rendering Location Toggles
     this.addRenderingLocationSettings(containerEl)
@@ -197,7 +196,9 @@ export class LucideIconsSettingTab extends PluginSettingTab {
           button.setTooltip("Icon preview - type icon name in field above")
         } else {
           button.setButtonText("Icon")
-          button.setTooltip("Type icon name in field above, e.g. 'home', 'folder', 'star'")
+          button.setTooltip(
+            "Type icon name in field above, e.g. 'home', 'folder', 'star'"
+          )
         }
         button.setDisabled(true) // Display only
       })
@@ -324,7 +325,9 @@ export class LucideIconsSettingTab extends PluginSettingTab {
           button.setTooltip("Icon preview - type icon name in field above")
         } else {
           button.setButtonText("Icon")
-          button.setTooltip("Type icon name in field above, e.g. 'home', 'folder', 'star'")
+          button.setTooltip(
+            "Type icon name in field above, e.g. 'home', 'folder', 'star'"
+          )
         }
         button.setDisabled(true) // Display only
       })

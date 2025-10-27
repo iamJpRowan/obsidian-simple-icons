@@ -1,4 +1,4 @@
-# Lucide Icons Plugin for Obsidian
+# Simple Icons Plugin for Obsidian
 
 Associate beautiful Lucide icons with your markdown files and see them throughout the Obsidian interface. Icons can be assigned via frontmatter, tags, or folder paths.
 
@@ -16,14 +16,14 @@ Associate beautiful Lucide icons with your markdown files and see them throughou
 ### From Obsidian Community Plugins (Coming Soon)
 
 1. Open Settings → Community Plugins
-2. Search for "Lucide Icons"
+2. Search for "Simple Icons"
 3. Click Install
 4. Enable the plugin
 
 ### Manual Installation
 
 1. Download the latest release from GitHub
-2. Extract the files to `{VaultFolder}/.obsidian/plugins/lucide-icons/`
+2. Extract the files to `{VaultFolder}/.obsidian/plugins/simple-icons/`
 3. Reload Obsidian
 4. Enable the plugin in Settings → Community Plugins
 
@@ -282,8 +282,8 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 ## Support
 
-- **Issues**: [GitHub Issues](https://github.com/iamJpRowan/obsidian-lucide-icons/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/iamJpRowan/obsidian-lucide-icons/discussions)
+- **Issues**: [GitHub Issues](https://github.com/iamJpRowan/obsidian-simple-icons/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/iamJpRowan/obsidian-simple-icons/discussions)
 
 ---
 

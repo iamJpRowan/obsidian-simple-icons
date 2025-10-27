@@ -1,5 +1,5 @@
 {
-  "name": "obsidian-lucide-icons",
+  "name": "obsidian-simple-icons",
   "version": "0.1.0",
   "description": "Associate Lucide icons to markdown files throughout Obsidian UI",
   "main": "main.js",

@@ -1,6 +1,6 @@
 {
-  "id": "lucide-icons",
-  "name": "Lucide Icons",
+  "id": "simple-icons",
+  "name": "Simple Icons",
   "version": "0.1.0",
   "minAppVersion": "0.15.0",
   "description": "Associate Lucide icons to markdown files throughout Obsidian UI via frontmatter, tags, or folders.",
