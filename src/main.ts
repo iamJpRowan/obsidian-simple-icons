@@ -84,7 +84,7 @@ export default class SimpleIconsPlugin extends Plugin {
   }
 
   onunload() {
-    this.iconRenderer.unload()
+    this.iconRenderer.onunload()
   }
 
   async loadSettings() {
@@ -99,7 +99,7 @@ export default class SimpleIconsPlugin extends Plugin {
    * Reload renderer after settings change
    */
   reloadRenderer() {
-    this.iconRenderer.unload()
+    this.iconRenderer.onunload()
     this.iconRenderer = new IconRenderer(
       this.app,
       this.iconResolver,
