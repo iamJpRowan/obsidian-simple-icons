@@ -248,6 +248,8 @@ export class SimpleIconsSettingTab extends PluginSettingTab {
     mapping: TagMapping,
     index: number
   ): void {
+    let previewButton: any
+
     const setting = new Setting(containerEl)
       .addText(text =>
         text
@@ -267,11 +269,24 @@ export class SimpleIconsSettingTab extends PluginSettingTab {
             this.plugin.settings.tagMappings[index].icon = value
             await this.plugin.saveSettings()
             this.plugin.iconResolver.clearCache()
-            this.display()
+
+            // Update icon preview in place without re-rendering the entire UI
+            if (value) {
+              setIcon(previewButton.buttonEl, value)
+              previewButton.setTooltip(
+                "Icon preview - type icon name in field above"
+              )
+            } else {
+              previewButton.setButtonText("Icon")
+              previewButton.setTooltip(
+                "Type icon name in field above, e.g. 'home', 'folder', 'star'"
+              )
+            }
           })
         text.inputEl.addClass("icon-name-input")
       })
       .addButton(button => {
+        previewButton = button
         if (mapping.icon) {
           setIcon(button.buttonEl, mapping.icon)
           button.setTooltip("Icon preview - type icon name in field above")
@@ -399,6 +414,8 @@ export class SimpleIconsSettingTab extends PluginSettingTab {
     mapping: FolderMapping,
     index: number
   ): void {
+    let previewButton: any
+
     const setting = new Setting(containerEl)
       .addText(text =>
         text
@@ -418,11 +435,24 @@ export class SimpleIconsSettingTab extends PluginSettingTab {
             this.plugin.settings.folderMappings[index].icon = value
             await this.plugin.saveSettings()
             this.plugin.iconResolver.clearCache()
-            this.display()
+
+            // Update icon preview in place without re-rendering the entire UI
+            if (value) {
+              setIcon(previewButton.buttonEl, value)
+              previewButton.setTooltip(
+                "Icon preview - type icon name in field above"
+              )
+            } else {
+              previewButton.setButtonText("Icon")
+              previewButton.setTooltip(
+                "Type icon name in field above, e.g. 'home', 'folder', 'star'"
+              )
+            }
           })
         text.inputEl.addClass("icon-name-input")
       })
       .addButton(button => {
+        previewButton = button
         if (mapping.icon) {
           setIcon(button.buttonEl, mapping.icon)
           button.setTooltip("Icon preview - type icon name in field above")
