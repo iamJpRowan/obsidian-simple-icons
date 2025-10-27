@@ -1,3 +1,16 @@
+/**
+ * main.ts
+ *
+ * This file is the main entry point for the Simple Icons Obsidian plugin.
+ * It initializes the plugin, sets up all rendering components, and handles
+ * the plugin lifecycle (load, unload, settings persistence).
+ *
+ * The plugin extends Obsidian's Plugin class and manages three main components:
+ * 1. IconResolver - determines which icon to display for each file
+ * 2. IconRenderer - renders icons in various locations throughout Obsidian
+ * 3. SettingsTab - provides the settings UI for configuring the plugin
+ */
+
 import { Plugin, TFile } from "obsidian"
 import { createEditorExtension, triggerIconRefresh } from "./EditorExtension"
 import { IconRenderer } from "./IconRenderer"
@@ -5,11 +18,29 @@ import { IconResolver } from "./IconResolver"
 import { SimpleIconsSettingTab } from "./SettingsTab"
 import { DEFAULT_SETTINGS, PluginSettings } from "./types"
 
+/**
+ * Main plugin class for Simple Icons
+ *
+ * This plugin displays custom icons next to files throughout Obsidian based on
+ * frontmatter, tags, or folder associations. Icons are rendered in wikilinks,
+ * file lists, file views (tabs), suggestions, and metadata panels.
+ */
 export default class SimpleIconsPlugin extends Plugin {
   settings: PluginSettings
   iconResolver: IconResolver
   iconRenderer: IconRenderer
 
+  /**
+   * Initializes the plugin and sets up all rendering components
+   *
+   * This method is called when the plugin is loaded. It:
+   * 1. Loads saved settings or uses defaults
+   * 2. Initializes the IconResolver and IconRenderer
+   * 3. Registers markdown post processor for reading mode
+   * 4. Registers editor extension for live preview mode
+   * 5. Sets up event listeners for file changes
+   * 6. Adds the settings tab to Obsidian's settings
+   */
   async onload() {
     await this.loadSettings()
 
@@ -83,20 +114,41 @@ export default class SimpleIconsPlugin extends Plugin {
     this.addSettingTab(new SimpleIconsSettingTab(this.app, this))
   }
 
+  /**
+   * Cleans up the plugin when it is unloaded
+   *
+   * Disconnects all observers and listeners to prevent memory leaks.
+   */
   onunload() {
     this.iconRenderer.onunload()
   }
 
+  /**
+   * Loads settings from Obsidian's data storage
+   *
+   * Merges saved settings with the default settings, ensuring all required
+   * properties are present even if settings are missing or incomplete.
+   */
   async loadSettings() {
     this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData())
   }
 
+  /**
+   * Saves settings to Obsidian's data storage
+   *
+   * Persists the current settings so they are restored when Obsidian restarts.
+   */
   async saveSettings() {
     await this.saveData(this.settings)
   }
 
   /**
-   * Reload renderer after settings change
+   * Reloads all renderers after settings change
+   *
+   * Destroys the existing IconRenderer and creates a new one with updated
+   * settings. This ensures all rendering components are using the latest
+   * configuration. Called when the user changes settings that affect
+   * rendering behavior.
    */
   reloadRenderer() {
     this.iconRenderer.onunload()

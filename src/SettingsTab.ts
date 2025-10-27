@@ -1,15 +1,49 @@
+/**
+ * SettingsTab.ts
+ *
+ * This file provides the settings UI for the Simple Icons plugin. It allows users to:
+ * 1. Toggle rendering locations (wikilinks, file views, file lists)
+ * 2. Enable/disable association methods (frontmatter, tags, folders)
+ * 3. Configure the frontmatter property name
+ * 4. Manage tag-to-icon mappings with priority ordering
+ * 5. Manage folder-to-icon mappings
+ *
+ * The settings tab uses Obsidian's Setting API to create a responsive and
+ * user-friendly interface for configuring all plugin options.
+ */
+
 import { App, PluginSettingTab, Setting, setIcon } from "obsidian"
 import SimpleIconsPlugin from "./main"
 import { FolderMapping, TagMapping } from "./types"
 
+/**
+ * Settings tab for configuring Simple Icons plugin
+ *
+ * Provides a comprehensive UI for managing all plugin settings including
+ * which locations icons should appear in and how icons are associated with files.
+ * The settings interface is dynamically generated based on current configuration.
+ */
 export class SimpleIconsSettingTab extends PluginSettingTab {
   plugin: SimpleIconsPlugin
 
+  /**
+   * Creates a new settings tab instance
+   *
+   * @param app - The Obsidian App instance
+   * @param plugin - Reference to the main plugin instance
+   */
   constructor(app: App, plugin: SimpleIconsPlugin) {
     super(app, plugin)
     this.plugin = plugin
   }
 
+  /**
+   * Builds and displays the settings interface
+   *
+   * This method is called by Obsidian when the settings tab is opened.
+   * It constructs the entire settings UI by calling helper methods for
+   * each section of settings.
+   */
   display(): void {
     const { containerEl } = this
     containerEl.empty()
@@ -23,6 +57,14 @@ export class SimpleIconsSettingTab extends PluginSettingTab {
     this.addAssociationMethodSettings(containerEl)
   }
 
+  /**
+   * Adds settings for controlling where icons are rendered
+   *
+   * Creates toggle switches for enabling/disabling icons in wikilinks,
+   * file views (tabs and inline titles), and file lists (explorer and search).
+   *
+   * @param containerEl - The container element to add settings to
+   */
   private addRenderingLocationSettings(containerEl: HTMLElement): void {
     containerEl.createEl("h3", { text: "Rendering Locations" })
     containerEl.createEl("p", {
@@ -69,6 +111,14 @@ export class SimpleIconsSettingTab extends PluginSettingTab {
       )
   }
 
+  /**
+   * Adds settings for configuring icon association methods
+   *
+   * Creates sections for each association method (frontmatter, tags, folders)
+   * with enable/disable toggles and method-specific configuration options.
+   *
+   * @param containerEl - The container element to add settings to
+   */
   private addAssociationMethodSettings(containerEl: HTMLElement): void {
     containerEl.createEl("h3", { text: "Icon Association Methods" })
     containerEl.createEl("p", {
@@ -86,6 +136,14 @@ export class SimpleIconsSettingTab extends PluginSettingTab {
     this.addFolderSettings(containerEl)
   }
 
+  /**
+   * Adds settings for frontmatter-based icon association
+   *
+   * Creates a toggle to enable/disable frontmatter icons and a text input
+   * for configuring which property name to read from (defaults to "icon").
+   *
+   * @param containerEl - The container element to add settings to
+   */
   private addFrontmatterSettings(containerEl: HTMLElement): void {
     containerEl.createEl("h4", { text: "Frontmatter" })
 
@@ -120,6 +178,15 @@ export class SimpleIconsSettingTab extends PluginSettingTab {
     }
   }
 
+  /**
+   * Adds settings for tag-based icon association
+   *
+   * Creates a toggle to enable/disable tag icons and displays all existing
+   * tag mappings. Each mapping can be edited, reordered, or deleted.
+   * The "Add tag mapping" button creates new mappings.
+   *
+   * @param containerEl - The container element to add settings to
+   */
   private addTagSettings(containerEl: HTMLElement): void {
     containerEl.createEl("h4", { text: "Tags" })
 
@@ -162,6 +229,20 @@ export class SimpleIconsSettingTab extends PluginSettingTab {
     }
   }
 
+  /**
+   * Creates a single row for editing a tag mapping
+   *
+   * Each row includes:
+   * - Text input for the tag name
+   * - Text input for the icon name
+   * - Preview button showing the icon
+   * - Move up/down buttons for reordering
+   * - Delete button
+   *
+   * @param containerEl - The container element to add the row to
+   * @param mapping - The tag mapping being edited
+   * @param index - The index of this mapping in the array
+   */
   private addTagMappingRow(
     containerEl: HTMLElement,
     mapping: TagMapping,
@@ -249,6 +330,15 @@ export class SimpleIconsSettingTab extends PluginSettingTab {
     setting.infoEl.remove()
   }
 
+  /**
+   * Adds settings for folder-based icon association
+   *
+   * Creates a toggle to enable/disable folder icons and displays all existing
+   * folder mappings. Each mapping can be edited or deleted. The "Add folder mapping"
+   * button creates new mappings.
+   *
+   * @param containerEl - The container element to add settings to
+   */
   private addFolderSettings(containerEl: HTMLElement): void {
     containerEl.createEl("h4", { text: "Folders" })
 
@@ -291,6 +381,19 @@ export class SimpleIconsSettingTab extends PluginSettingTab {
     }
   }
 
+  /**
+   * Creates a single row for editing a folder mapping
+   *
+   * Each row includes:
+   * - Text input for the folder path
+   * - Text input for the icon name
+   * - Preview button showing the icon
+   * - Delete button
+   *
+   * @param containerEl - The container element to add the row to
+   * @param mapping - The folder mapping being edited
+   * @param index - The index of this mapping in the array
+   */
   private addFolderMappingRow(
     containerEl: HTMLElement,
     mapping: FolderMapping,

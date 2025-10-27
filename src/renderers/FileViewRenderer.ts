@@ -1,8 +1,26 @@
+/**
+ * FileViewRenderer.ts
+ *
+ * This file provides icon rendering for file views in Obsidian, including:
+ * - Tab headers (workspace tabs)
+ * - Inline titles (file titles in the editor view)
+ *
+ * The renderer listens to workspace events (active-leaf-change, layout-change)
+ * and updates icons when files are opened or switched to.
+ */
+
 import { App, MarkdownView, TFile } from "obsidian"
 import { IconElementFactory } from "../IconElementFactory"
 import { IconResolver } from "../IconResolver"
 import { PluginSettings } from "../types"
 
+/**
+ * Renders icons in file views (tabs and inline titles)
+ *
+ * This renderer listens for workspace events and updates icons in tab headers
+ * and inline titles when files are opened or the active leaf changes. It uses
+ * workspace events rather than mutation observers for better performance.
+ */
 export class FileViewRenderer {
   private app: App
   private iconResolver: IconResolver
@@ -19,7 +37,11 @@ export class FileViewRenderer {
   }
 
   /**
-   * Register file view rendering (tabs and inline titles)
+   * Initializes file view rendering with workspace event listeners
+   *
+   * Registers listeners for active-leaf-change and layout-change events to
+   * automatically update icons when files are opened, closed, or switched.
+   * Also performs an initial render to add icons to currently visible files.
    */
   initialize(app: App): void {
     if (!this.settings.renderInFileView) return
@@ -38,7 +60,11 @@ export class FileViewRenderer {
   }
 
   /**
-   * Update icons in file views (tabs and titles)
+   * Updates icons for all visible file views
+   *
+   * Iterates through all open markdown tabs and updates their header icons.
+   * Also updates inline titles in the active editor view. This is called
+   * when workspace events fire or when manually refreshing.
    */
   updateFileViewIcons(): void {
     if (!this.settings.renderInFileView) return
@@ -59,7 +85,13 @@ export class FileViewRenderer {
   }
 
   /**
-   * Update icon for a specific file in file views
+   * Updates the icon for a specific file in file views
+   *
+   * Locates the tab header and inline title for the given file and updates
+   * their icons. This is more efficient than refreshing all files when only
+   * one file has changed.
+   *
+   * @param file - The file whose icon should be updated
    */
   updateSingleFileIcon(file: TFile): void {
     if (!this.settings.renderInFileView) return
@@ -88,7 +120,12 @@ export class FileViewRenderer {
   }
 
   /**
-   * Update icon in workspace tab header for a specific leaf
+   * Updates the icon in a workspace tab header
+   *
+   * Finds the tab header element by matching the file's basename to the tab
+   * title text, then updates or adds the icon element.
+   *
+   * @param leaf - The workspace leaf (view) to update
    */
   private updateTabHeaderForLeaf(leaf: any): void {
     if (!(leaf.view instanceof MarkdownView)) return
@@ -127,7 +164,12 @@ export class FileViewRenderer {
   }
 
   /**
-   * Update icon in inline title
+   * Updates the icon in an inline title
+   *
+   * Updates the icon for the current file's inline title in the editor view.
+   * The title element is already provided from the DOM query.
+   *
+   * @param title - The inline title element to update
    */
   private updateInlineTitleIcon(title: HTMLElement): void {
     const leaf = this.app.workspace.activeLeaf

@@ -1,9 +1,28 @@
+/**
+ * MetadataRenderer.ts
+ *
+ * This file provides icon rendering for metadata links in Obsidian, including:
+ * - Metadata link divs (file links in properties panel)
+ * - Multi-select pills (tag-like elements for metadata fields)
+ *
+ * The renderer uses a MutationObserver to detect when metadata panels are
+ * created or updated. It must observe document.body since metadata panels
+ * can appear anywhere in the UI dynamically.
+ */
+
 import { App } from "obsidian"
 import { IconElementFactory } from "../IconElementFactory"
 import { IconResolver } from "../IconResolver"
 import { ObserverManager } from "../ObserverManager"
 import { PluginSettings } from "../types"
 
+/**
+ * Renders icons in metadata links and multi-select pills
+ *
+ * This renderer watches for changes to metadata containers and automatically
+ * adds icons to file links in properties panels. It filters mutations to only
+ * respond to metadata-related changes for better performance.
+ */
 export class MetadataRenderer {
   private app: App
   private iconResolver: IconResolver
@@ -28,7 +47,12 @@ export class MetadataRenderer {
   }
 
   /**
-   * Initialize metadata link rendering with mutation observer
+   * Initializes metadata link rendering with a mutation observer
+   *
+   * Sets up an observer to watch for changes to metadata containers. When
+   * metadata links or multi-select pills are added, icons are automatically
+   * applied. The observer filters mutations to only process metadata-related
+   * changes for performance.
    */
   initialize(): void {
     if (!this.settings.renderInWikilinks) return
@@ -99,7 +123,11 @@ export class MetadataRenderer {
   }
 
   /**
-   * Update icons in metadata links
+   * Updates icons for all visible metadata links and multi-select pills
+   *
+   * Queries the DOM for all metadata link divs and multi-select pills and
+   * adds icons based on the linked file. Skips elements that already have
+   * icons to avoid duplicates.
    */
   private updateMetadataLinkIcons(): void {
     if (!this.settings.renderInWikilinks) return

@@ -1,3 +1,14 @@
+/**
+ * WikilinkRenderer.ts
+ *
+ * This file provides icon rendering for wikilinks in Obsidian markdown.
+ * Wikilinks are the [[...]] syntax used to link between notes in Obsidian.
+ * Icons are displayed next to these links in both reading mode and live preview.
+ *
+ * The renderer supports both the markdown post processor (reading mode) and
+ * can also update individual wikilinks when file metadata changes.
+ */
+
 import {
   App,
   MarkdownPostProcessorContext,
@@ -8,6 +19,14 @@ import { IconElementFactory } from "../IconElementFactory"
 import { IconResolver } from "../IconResolver"
 import { PluginSettings } from "../types"
 
+/**
+ * Renders icons next to wikilinks in markdown
+ *
+ * This renderer handles wikilink icon rendering in both reading mode (via
+ * markdown post processor) and live preview mode (via editor extension).
+ * It resolves the target file for each wikilink and displays the appropriate
+ * icon based on plugin settings.
+ */
 export class WikilinkRenderer {
   private app: App
   private iconResolver: IconResolver
@@ -24,7 +43,15 @@ export class WikilinkRenderer {
   }
 
   /**
-   * Render icon for wikilink (used in markdown post processor)
+   * Renders icons for wikilinks in a markdown element (reading mode)
+   *
+   * This method is called by Obsidian's markdown post processor for each
+   * markdown element that might contain wikilinks. It finds all internal links
+   * and adds icons based on the resolved target file. Special handling for
+   * multi-select pills (tag-like metadata elements).
+   *
+   * @param el - The HTML element containing wikilinks
+   * @param ctx - The post processor context with source path information
    */
   renderWikilinkIcon(el: HTMLElement, ctx: MarkdownPostProcessorContext): void {
     if (!this.settings.renderInWikilinks) return
@@ -69,7 +96,13 @@ export class WikilinkRenderer {
   }
 
   /**
-   * Update all wikilinks that reference a specific file across all open views
+   * Updates all wikilinks that reference a specific file across all open views
+   *
+   * When a file's metadata changes, this method finds all wikilinks pointing
+   * to that file in all open markdown views and updates their icons. This
+   * ensures the UI stays in sync when file metadata changes.
+   *
+   * @param targetFile - The file whose icon should be updated in wikilinks
    */
   updateWikilinksForFile(targetFile: TFile): void {
     if (!this.settings.renderInWikilinks) return

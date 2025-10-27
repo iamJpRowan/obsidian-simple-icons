@@ -1,9 +1,29 @@
+/**
+ * SuggestionRenderer.ts
+ *
+ * This file provides icon rendering for suggestion popups in Obsidian.
+ * Suggestion popups appear when autocompleting various inputs like wikilinks,
+ * tags, and other metadata. Icons are added to the suggestion items to
+ * help users identify the files they're linking to.
+ *
+ * The renderer uses a MutationObserver to detect when suggestion popups appear
+ * and automatically applies icons to the suggestion items.
+ */
+
 import { App, TFile } from "obsidian"
 import { IconElementFactory } from "../IconElementFactory"
 import { IconResolver } from "../IconResolver"
 import { ObserverManager } from "../ObserverManager"
 import { PluginSettings } from "../types"
 
+/**
+ * Renders icons in suggestion popups
+ *
+ * This renderer watches for suggestion containers to appear in the DOM and
+ * automatically adds icons to suggestion items. It filters mutations to only
+ * respond to suggestion-related changes, skipping file explorer, search, and
+ * metadata changes for better performance.
+ */
 export class SuggestionRenderer {
   private app: App
   private iconResolver: IconResolver
@@ -28,7 +48,12 @@ export class SuggestionRenderer {
   }
 
   /**
-   * Initialize suggestion rendering with mutation observer
+   * Initializes suggestion rendering with a mutation observer
+   *
+   * Sets up an observer to watch for suggestion containers appearing in the
+   * DOM. When suggestions are displayed, icons are automatically applied to
+   * each suggestion item. The observer filters mutations to only process
+   * suggestion-related changes, excluding file explorer, search, and metadata.
    */
   initialize(): void {
     if (!this.settings.renderInWikilinks) return
@@ -95,7 +120,12 @@ export class SuggestionRenderer {
   }
 
   /**
-   * Update icons in suggestion items
+   * Updates icons for all visible suggestion items
+   *
+   * Queries the DOM for all suggestion items and adds icons based on the
+   * file path associated with each suggestion. The file path is extracted
+   * from various sources (data-path attribute, auxiliary text, or title text).
+   * Skips items that already have icons to avoid duplicates.
    */
   private updateSuggestionIcons(): void {
     if (!this.settings.renderInWikilinks) return
