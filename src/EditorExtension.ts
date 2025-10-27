@@ -152,15 +152,22 @@ export function createEditorExtension(app: App, iconResolver: IconResolver) {
             from,
             to,
             enter: (node: any) => {
-              // Look for internal links (wikilinks)
-              // In live preview, the link text is in the hmd-internal-link node without brackets
-              if (node.name === "hmd-internal-link") {
+              // Look for internal links (wikilinks) in all formatting contexts
+              // Links can appear as: "hmd-internal-link", "hmd-internal-link_strong",
+              // "header_header-2_hmd-internal-link", "hmd-internal-link_list-1", etc.
+              if (
+                node.name &&
+                (node.name === "hmd-internal-link" ||
+                  node.name.startsWith("hmd-internal-link_") ||
+                  node.name.endsWith("_hmd-internal-link") ||
+                  node.name.includes("_hmd-internal-link_"))
+              ) {
                 const linkText = view.state.doc.sliceString(node.from, node.to)
 
                 // Parse link text - may contain | for alias (e.g., "file|display text")
                 let linkPath = linkText
                 if (linkText.includes("|")) {
-                  linkPath = linkText.split("|")[0] // Use only the file path part
+                  linkPath = linkText.split("|")[0]
                 }
 
                 // Resolve the linked file using Obsidian's metadata cache
@@ -174,12 +181,13 @@ export function createEditorExtension(app: App, iconResolver: IconResolver) {
                   const iconName = iconResolver.getIconForFile(linkedFile)
 
                   if (iconName) {
-                    // Position the icon at the start of the link text
+                    // Position the icon before the link text
                     const iconPos = node.from
                     const widget = Decoration.widget({
                       widget: new IconWidget(iconName),
-                      side: 1, // Position after the cursor position
+                      side: -1, // Place before the link text
                     })
+
                     builder.add(iconPos, iconPos, widget)
                   }
                 }

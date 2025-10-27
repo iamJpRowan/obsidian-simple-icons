@@ -57,10 +57,31 @@ export class WikilinkRenderer {
     if (!this.settings.renderInWikilinks) return
 
     // Find all internal links in the element (both <a> and <div> variants)
-    const links = el.querySelectorAll("a.internal-link, div.internal-link")
+    // Also check for cm-underline class which appears in live preview for formatted wikilinks
+    const links = el.querySelectorAll(
+      "a.internal-link, div.internal-link, a.cm-underline[href^='#'], a.cm-underline[data-href^='#']"
+    )
     links.forEach(link => {
-      const href = link.getAttribute("href") || link.getAttribute("data-href")
+      let href = link.getAttribute("href") || link.getAttribute("data-href")
       if (!href) return
+
+      // For cm-underline elements in live preview, the href might be just "#"
+      // and we need to extract the link text from the element or a data attribute
+      if (href === "#" && link.classList.contains("cm-underline")) {
+        // Try to get the actual link path from data-href or href attributes with more context
+        const fullHref =
+          link.getAttribute("data-href") || link.getAttribute("href")
+        if (fullHref && fullHref !== "#") {
+          href = fullHref
+        } else {
+          // If href is just "#", try to find the actual path from the parent or sibling elements
+          // In live preview, the actual link data might be in data-href or we need to look elsewhere
+          const dataHref = link.getAttribute("data-href")
+          if (dataHref && dataHref.startsWith("#/")) {
+            href = dataHref.substring(2) // Remove "#/" prefix
+          }
+        }
+      }
 
       // Check if icon already exists
       if (link.querySelector(".file-icon")) return
@@ -119,12 +140,22 @@ export class WikilinkRenderer {
       if (!contentEl) return
 
       // Find all wikilinks in this view
+      // Also check for cm-underline class which appears in live preview for formatted wikilinks
       const links = contentEl.querySelectorAll(
-        "a.internal-link, div.internal-link"
+        "a.internal-link, div.internal-link, a.cm-underline[href^='#'], a.cm-underline[data-href^='#']"
       )
       links.forEach(link => {
-        const href = link.getAttribute("href") || link.getAttribute("data-href")
+        let href = link.getAttribute("href") || link.getAttribute("data-href")
         if (!href) return
+
+        // For cm-underline elements in live preview, the href might be just "#"
+        // and we need to extract the link text from the element or a data attribute
+        if (href === "#" && link.classList.contains("cm-underline")) {
+          const dataHref = link.getAttribute("data-href")
+          if (dataHref && dataHref.startsWith("#/")) {
+            href = dataHref.substring(2) // Remove "#/" prefix
+          }
+        }
 
         // Resolve the linked file
         const linkedFile = this.app.metadataCache.getFirstLinkpathDest(

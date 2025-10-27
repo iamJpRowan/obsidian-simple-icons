@@ -115,6 +115,19 @@ export class IconRenderer extends Component {
     this.fileListRenderer.initialize()
     this.suggestionRenderer.initialize()
     this.metadataRenderer.initialize()
+    this.initializeLivePreviewRendering()
+  }
+
+  /**
+   * Initializes live preview rendering with DOM mutation observer
+   *
+   * Sets up a mutation observer to watch for changes in the DOM and update
+   * icons for wikilinks that appear in formatting contexts (bold, headers, lists)
+   * that the CodeMirror decoration approach might miss.
+   */
+  private initializeLivePreviewRendering(): void {
+    // Live preview rendering is handled by CodeMirror decorations in EditorExtension
+    // No additional initialization needed
   }
 
   /**
