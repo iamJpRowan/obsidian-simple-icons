@@ -113,10 +113,12 @@ export class IconRenderer extends Component {
   private updateFileViewIcons(): void {
     if (!this.settings.renderInFileView) return
 
-    // Update all view headers (tabs)
-    const viewHeaders = document.querySelectorAll(".view-header-title")
-    viewHeaders.forEach(header => {
-      this.updateViewHeaderIcon(header as HTMLElement)
+    // Update all markdown view tabs by iterating through leaves
+    const leaves = this.app.workspace.getLeavesOfType("markdown")
+    leaves.forEach(leaf => {
+      if (leaf.view instanceof MarkdownView && leaf.view.file) {
+        this.updateTabHeaderForLeaf(leaf)
+      }
     })
 
     // Update inline titles in editor
@@ -127,26 +129,41 @@ export class IconRenderer extends Component {
   }
 
   /**
-   * Update icon in view header (tab)
+   * Update icon in workspace tab header for a specific leaf
    */
-  private updateViewHeaderIcon(header: HTMLElement): void {
-    const leaf = this.app.workspace.activeLeaf
-    if (!leaf || !(leaf.view instanceof MarkdownView)) return
+  private updateTabHeaderForLeaf(leaf: any): void {
+    if (!(leaf.view instanceof MarkdownView)) return
 
     const file = leaf.view.file
     if (!file) return
 
+    // Find the tab header by matching the file basename with tab header text
+    const allHeaders = Array.from(
+      document.querySelectorAll(".workspace-tab-header-inner-title")
+    )
+
+    let viewHeader: Element | null = null
+    for (const header of allHeaders) {
+      const titleText = header.textContent?.trim()
+      if (titleText === file.basename || titleText === file.name) {
+        viewHeader = header
+        break
+      }
+    }
+
+    if (!viewHeader) return
+
     const iconName = this.iconResolver.getIconForFile(file)
 
     // Remove existing icon
-    const existingIcon = header.querySelector(".file-icon")
+    const existingIcon = viewHeader.querySelector(".file-icon")
     if (existingIcon) {
       existingIcon.remove()
     }
 
     if (iconName) {
       const iconEl = this.createIconElement(iconName)
-      header.prepend(iconEl)
+      viewHeader.prepend(iconEl)
     }
   }
 

@@ -19,6 +19,16 @@
   stroke-width: var(--icon-s-stroke-width);
 }
 
+/* Workspace tab header icons */
+.workspace-tab-header-inner-title .file-icon {
+  margin-right: var(--size-2-2);
+}
+
+.workspace-tab-header-inner-title .file-icon svg {
+  width: var(--icon-xs);
+  height: var(--icon-xs);
+}
+
 /* Icon picker suggestion styling */
 .icon-picker-suggestion {
   display: flex;
