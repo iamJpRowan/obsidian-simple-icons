@@ -82,9 +82,23 @@ export class IconRenderer extends Component {
       const iconName = this.iconResolver.getIconForFile(file)
       if (!iconName) return
 
-      // Create and prepend icon
+      // Create icon element
       const iconEl = this.createIconElement(iconName)
-      link.prepend(iconEl)
+
+      // For multi-select pills, prepend to content container
+      if (
+        link instanceof HTMLElement &&
+        link.classList.contains("multi-select-pill")
+      ) {
+        const contentEl = link.querySelector(".multi-select-pill-content")
+        if (contentEl) {
+          contentEl.prepend(iconEl)
+        } else {
+          link.prepend(iconEl)
+        }
+      } else {
+        link.prepend(iconEl)
+      }
     })
   }
 
@@ -318,7 +332,20 @@ export class IconRenderer extends Component {
 
             if (iconName) {
               const iconEl = this.createIconElement(iconName)
-              link.prepend(iconEl)
+
+              // For multi-select pills, prepend to content container
+              if (link.classList.contains("multi-select-pill")) {
+                const contentEl = link.querySelector(
+                  ".multi-select-pill-content"
+                )
+                if (contentEl) {
+                  contentEl.prepend(iconEl)
+                } else {
+                  link.prepend(iconEl)
+                }
+              } else {
+                link.prepend(iconEl)
+              }
             }
           }
         })
@@ -540,8 +567,12 @@ export class IconRenderer extends Component {
           if (
             target.closest(".metadata-link-inner") ||
             target.closest(".metadata-container") ||
+            target.closest(".multi-select-pill") ||
+            target.closest(".multi-select-container") ||
             target.classList?.contains("metadata-link-inner") ||
-            target.classList?.contains("metadata-container")
+            target.classList?.contains("metadata-container") ||
+            target.classList?.contains("multi-select-pill") ||
+            target.classList?.contains("multi-select-container")
           ) {
             hasMetadata = true
             break
@@ -554,7 +585,10 @@ export class IconRenderer extends Component {
             if (
               node.classList?.contains("metadata-link-inner") ||
               node.classList?.contains("metadata-container") ||
-              node.querySelector?.(".metadata-link-inner")
+              node.classList?.contains("multi-select-pill") ||
+              node.classList?.contains("multi-select-container") ||
+              node.querySelector?.(".metadata-link-inner") ||
+              node.querySelector?.(".multi-select-pill")
             ) {
               hasMetadata = true
               break
@@ -626,6 +660,37 @@ export class IconRenderer extends Component {
       // Create and prepend icon
       const iconEl = this.createIconElement(iconName)
       link.prepend(iconEl)
+    })
+
+    // Find all multi-select pills
+    const multiSelectPills = document.querySelectorAll(
+      "div.multi-select-pill.internal-link"
+    )
+
+    multiSelectPills.forEach(pill => {
+      // Skip if icon already exists
+      if (pill.querySelector(".file-icon")) return
+
+      // Get the data-href attribute
+      const href = pill.getAttribute("data-href")
+      if (!href) return
+
+      // Resolve the file from the link
+      const file = this.app.metadataCache.getFirstLinkpathDest(
+        href,
+        activeFile.path
+      )
+      if (!file) return
+
+      const iconName = this.iconResolver.getIconForFile(file)
+      if (!iconName) return
+
+      // Find the content container (multi-select-pill-content) and prepend icon there
+      const contentEl = pill.querySelector(".multi-select-pill-content")
+      if (contentEl) {
+        const iconEl = this.createIconElement(iconName)
+        contentEl.prepend(iconEl)
+      }
     })
   }
 
