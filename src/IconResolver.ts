@@ -158,24 +158,61 @@ export class IconResolver {
    * Resolves icon based on file tags using configured tag mappings
    *
    * Checks all tags on the file against the configured tag mappings in priority order.
-   * Returns the icon associated with the first matching tag. Tags without the '#'
-   * prefix are stored in the metadata, so we strip it for comparison.
+   * Returns the icon associated with the first matching tag. Tags can come from:
+   * 1. Inline tags in the document body (stored in metadata.tags)
+   * 2. Frontmatter tags (stored in metadata.frontmatter.tags array)
+   *
+   * Tags are normalized by trimming whitespace and removing the '#' prefix if present.
    *
    * @param metadata - The cached metadata for the file
    * @returns The icon name from tag mapping, or null if no tags match
    */
   private getIconFromTags(metadata: CachedMetadata): string | null {
-    if (!metadata.tags || metadata.tags.length === 0) {
+    const allTags: string[] = []
+
+    // 1. Get inline tags (from document body like #tag)
+    if (metadata.tags && metadata.tags.length > 0) {
+      allTags.push(
+        ...metadata.tags.map(t => {
+          const tag = t.tag.trim()
+          return tag.startsWith("#") ? tag.substring(1) : tag
+        })
+      )
+    }
+
+    // 2. Get frontmatter tags (from YAML tags array)
+    if (metadata.frontmatter?.tags) {
+      // Frontmatter tags can be an array or single string
+      if (Array.isArray(metadata.frontmatter.tags)) {
+        allTags.push(
+          ...metadata.frontmatter.tags.map(tag => {
+            if (typeof tag === "string") {
+              const trimmed = tag.trim()
+              return trimmed.startsWith("#") ? trimmed.substring(1) : trimmed
+            }
+            return String(tag).trim()
+          })
+        )
+      } else if (typeof metadata.frontmatter.tags === "string") {
+        const trimmed = metadata.frontmatter.tags.trim()
+        allTags.push(trimmed.startsWith("#") ? trimmed.substring(1) : trimmed)
+      }
+    }
+
+    if (allTags.length === 0) {
       return null
     }
 
-    // Get all tags from the file (without # prefix)
-    const fileTags = metadata.tags.map(t => t.tag.replace(/^#/, ""))
-
     // Check each tag mapping in priority order
     for (const mapping of this.settings.tagMappings) {
+      // Normalize the mapping tag by trimming and removing # prefix if present
+      let normalizedMappingTag = mapping.tag.trim()
+      if (normalizedMappingTag.startsWith("#")) {
+        normalizedMappingTag = normalizedMappingTag.substring(1)
+      }
+
       if (
-        fileTags.includes(mapping.tag) &&
+        allTags.includes(normalizedMappingTag) &&
         mapping.icon &&
         mapping.icon.trim() !== ""
       ) {
