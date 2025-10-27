@@ -33,6 +33,7 @@ export class IconRenderer extends Component {
     this.registerFileViewRendering()
     this.registerFileListRendering()
     this.registerSuggestRendering()
+    this.registerMetadataLinkRendering()
   }
 
   /**
@@ -59,10 +60,10 @@ export class IconRenderer extends Component {
   renderWikilinkIcon(el: HTMLElement, ctx: MarkdownPostProcessorContext): void {
     if (!this.settings.renderInWikilinks) return
 
-    // Find all internal links in the element
-    const links = el.querySelectorAll("a.internal-link")
+    // Find all internal links in the element (both <a> and <div> variants)
+    const links = el.querySelectorAll("a.internal-link, div.internal-link")
     links.forEach(link => {
-      const href = link.getAttribute("href")
+      const href = link.getAttribute("href") || link.getAttribute("data-href")
       if (!href) return
 
       // Resolve the file from the link
@@ -457,6 +458,125 @@ export class IconRenderer extends Component {
           existingIcon.remove()
         }
       }
+    })
+  }
+
+  /**
+   * Register metadata link rendering (properties/frontmatter)
+   */
+  private registerMetadataLinkRendering(): void {
+    if (!this.settings.renderInWikilinks) return
+
+    let debounceTimer: NodeJS.Timeout | null = null
+
+    // Set up mutation observer for metadata link elements
+    const observer = new MutationObserver(mutations => {
+      let hasMetadata = false
+
+      for (const mutation of mutations) {
+        // Check if mutation is within or involves metadata-link-inner elements
+        if (mutation.target instanceof Element) {
+          const target = mutation.target as Element
+          if (
+            target.closest(".metadata-link-inner") ||
+            target.closest(".metadata-container") ||
+            target.closest(".metadata-property") ||
+            target.classList?.contains("metadata-link-inner") ||
+            target.classList?.contains("metadata-container") ||
+            target.classList?.contains("metadata-property")
+          ) {
+            hasMetadata = true
+            break
+          }
+        }
+
+        // Check added nodes for metadata elements
+        const addedNodes = Array.from(mutation.addedNodes)
+        for (const node of addedNodes) {
+          if (node instanceof Element) {
+            if (
+              node.classList?.contains("metadata-link-inner") ||
+              node.classList?.contains("metadata-container") ||
+              node.classList?.contains("metadata-property") ||
+              node.querySelector?.(".metadata-link-inner") !== null ||
+              node.querySelector?.(".metadata-container") !== null ||
+              node.querySelector?.(".metadata-property") !== null
+            ) {
+              hasMetadata = true
+              break
+            }
+          }
+        }
+        if (hasMetadata) break
+      }
+
+      if (hasMetadata) {
+        // Debounce to avoid excessive updates
+        if (debounceTimer) {
+          clearTimeout(debounceTimer)
+        }
+        debounceTimer = setTimeout(() => {
+          this.updateMetadataLinkIcons()
+          debounceTimer = null
+        }, 50)
+      }
+    })
+
+    // Observe the document body for metadata changes
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+    })
+
+    this.observers.push(observer)
+
+    // Initial render
+    setTimeout(() => this.updateMetadataLinkIcons(), 100)
+
+    // Also update on active leaf change
+    this.registerEvent(
+      this.app.workspace.on("active-leaf-change", () => {
+        setTimeout(() => this.updateMetadataLinkIcons(), 100)
+      })
+    )
+  }
+
+  /**
+   * Update icons in metadata links
+   */
+  private updateMetadataLinkIcons(): void {
+    if (!this.settings.renderInWikilinks) return
+
+    // Get the active file for path resolution
+    const activeFile = this.app.workspace.getActiveFile()
+    if (!activeFile) return
+
+    // Find all metadata link divs (specifically target metadata-link-inner)
+    const metadataLinks = document.querySelectorAll(
+      "div.metadata-link-inner.internal-link"
+    )
+
+    metadataLinks.forEach(link => {
+      // Check if icon already exists
+      if (link.querySelector(".file-icon")) return
+
+      // Get the data-href attribute (metadata links use data-href, not href)
+      const href = link.getAttribute("data-href")
+      if (!href) return
+
+      // Resolve the file from the link
+      const file = this.app.metadataCache.getFirstLinkpathDest(
+        href,
+        activeFile.path
+      )
+      if (!file) return
+
+      const iconName = this.iconResolver.getIconForFile(file)
+      if (!iconName) return
+
+      // Create and prepend icon
+      const iconEl = this.createIconElement(iconName)
+      link.prepend(iconEl)
     })
   }
 }

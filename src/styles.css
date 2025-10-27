@@ -45,3 +45,13 @@
 .setting-item-control input[type="text"].icon-name-input {
   width: 120px;
 }
+
+/* Metadata link icons (for properties/frontmatter links) */
+.metadata-link-inner .file-icon {
+  margin-right: var(--size-2-1);
+}
+
+.metadata-link-inner .file-icon svg {
+  width: var(--icon-xs);
+  height: var(--icon-xs);
+}
