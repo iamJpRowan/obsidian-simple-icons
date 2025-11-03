@@ -1,3 +1,57 @@
 /* Main plugin styles */
 
-/* Add your custom styles here */
+/* File icon styling using Obsidian's built-in variables */
+.file-icon {
+  margin-right: var(--size-2-2);
+  display: inline-flex;
+  align-items: center;
+}
+
+.file-icon svg {
+  width: var(--icon-xs);
+  height: var(--icon-xs);
+}
+
+/* Inline title icons should be larger */
+.inline-title .file-icon svg {
+  width: var(--icon-l);
+  height: var(--icon-l);
+  stroke-width: var(--icon-s-stroke-width);
+}
+
+/* Workspace tab header icons */
+.workspace-tab-header-inner-title .file-icon {
+  margin-right: var(--size-2-2);
+}
+
+.workspace-tab-header-inner-title .file-icon svg {
+  width: var(--icon-xs);
+  height: var(--icon-xs);
+}
+
+/* Icon picker suggestion styling */
+.icon-picker-suggestion {
+  display: flex;
+  align-items: center;
+  gap: var(--size-4-2);
+}
+
+.icon-picker-icon {
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Settings text input width */
+.setting-item-control input[type="text"].icon-name-input {
+  width: 120px;
+}
+
+/* Metadata link icons (for properties/frontmatter links) */
+.metadata-link-inner .file-icon {
+  margin-right: var(--size-2-1);
+}
+
+.metadata-link-inner .file-icon svg {
+  width: var(--icon-xs);
+  height: var(--icon-xs);
+}

@@ -1,7 +1,7 @@
 {
-  "name": "obsidian-plugin-template",
+  "name": "obsidian-simple-icons",
   "version": "0.1.0",
-  "description": "A minimal template for Obsidian plugins",
+  "description": "Associate Lucide icons to markdown files throughout Obsidian UI",
   "main": "main.js",
   "scripts": {
     "dev": "node esbuild.config.mjs",
@@ -10,10 +10,13 @@
   },
   "keywords": [
     "obsidian",
-    "obsidian-plugin"
+    "obsidian-plugin",
+    "lucide",
+    "icons"
   ],
   "author": "",
   "license": "MIT",
+  "dependencies": {},
   "devDependencies": {
     "@types/node": "^16.11.6",
     "@typescript-eslint/eslint-plugin": "5.29.0",

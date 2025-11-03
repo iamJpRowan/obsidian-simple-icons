@@ -1,11 +1,11 @@
 {
-  "id": "your-plugin-id",
-  "name": "Your Plugin Name",
+  "id": "simple-icons",
+  "name": "Simple Icons",
   "version": "0.1.0",
   "minAppVersion": "0.15.0",
-  "description": "Your plugin description",
-  "author": "Your Name",
-  "authorUrl": "https://github.com/yourusername",
+  "description": "Associate Lucide icons to markdown files throughout Obsidian UI via frontmatter, tags, or folders.",
+  "author": "Jp Rowan",
+  "authorUrl": "https://github.com/iamJpRowan",
   "fundingUrl": "",
   "isDesktopOnly": false
 }

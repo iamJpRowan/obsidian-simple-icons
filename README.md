@@ -1,188 +1,290 @@
-# Obsidian Plugin Template
+# Simple Icons Plugin for Obsidian
 
-A minimal, production-ready template for developing Obsidian plugins with TypeScript.
+Associate beautiful Lucide icons with your markdown files and see them throughout the Obsidian interface. Icons can be assigned via frontmatter, tags, or folder paths.
 
 ## Features
 
-- ✨ **Minimal Setup** - Just the essentials to get started
-- 🔧 **TypeScript** - Full type safety with Obsidian API
-- 🎨 **CSS Bundling** - Automatically collects and bundles all CSS files from your project
-- 🔄 **Hot Reload** - Auto-copy to vault on file changes during development
-- 📦 **Production Build** - Optimized builds with tree-shaking and minification
-- 🚀 **GitHub Actions** - Automated releases with CI/CD
-- 🔐 **Environment Variables** - Secure vault path management with `.env`
+- **Multiple Association Methods**: Configure icons using frontmatter properties, tags, or folder paths
+- **Priority System**: Frontmatter > Tags > Folders (customize which methods are active)
+- **Universal Rendering**: Icons appear in wikilinks, file views, tabs, file explorer, and search results
+- **Full Lucide Icon Support**: Access to all Lucide icons available in Obsidian via the built-in icon system
+- **Visual Icon Picker**: Search and select icons with a built-in picker
+- **Performance Optimized**: Intelligent caching and efficient updates
 
-## Getting Started
+## Installation
 
-### 1. Use This Template
+### From Obsidian Community Plugins (Coming Soon)
 
-Click the "Use this template" button on GitHub to create your own repository.
+1. Open Settings → Community Plugins
+2. Search for "Simple Icons"
+3. Click Install
+4. Enable the plugin
 
-### 2. Clone Your Repository
+### Manual Installation
 
-```bash
-git clone https://github.com/yourusername/your-plugin-name.git
-cd your-plugin-name
+1. Download the latest release from GitHub
+2. Extract the files to `{VaultFolder}/.obsidian/plugins/simple-icons/`
+3. Reload Obsidian
+4. Enable the plugin in Settings → Community Plugins
+
+## Usage
+
+### Icon Association Methods
+
+The plugin supports three methods for associating icons with files. You can enable or disable each method in the plugin settings.
+
+#### 1. Frontmatter (Highest Priority)
+
+Add an icon property to your file's frontmatter:
+
+```yaml
+---
+icon: home
+title: My Note
+---
 ```
 
-### 3. Install Dependencies
+**Configuration:**
+
+- Toggle: Enable/disable frontmatter icons
+- Property Name: Customize the property name (default: `icon`)
+
+**Example:**
+
+```yaml
+---
+icon: book-open
+tags: [reading, notes]
+---
+```
+
+#### 2. Tags (Medium Priority)
+
+Associate icons with tags in the plugin settings. If a file has multiple tags with icon mappings, the first matching tag (in your priority order) is used.
+
+**Configuration:**
+
+- Toggle: Enable/disable tag-based icons
+- Add Mappings: Create tag → icon associations
+- Reorder: Drag mappings up/down to set priority
+- Delete: Remove unwanted mappings
+
+**Example Setup:**
+
+1. Create mapping: `project` → `folder`
+2. Create mapping: `urgent` → `alert-circle`
+3. Files tagged with `#urgent` will show the alert-circle icon
+4. Files tagged with `#project` (but not `#urgent`) will show the folder icon
+
+#### 3. Folders (Lowest Priority)
+
+Associate icons with folder paths. Files inherit the icon from their deepest matching folder.
+
+**Configuration:**
+
+- Toggle: Enable/disable folder-based icons
+- Add Mappings: Create folder path → icon associations
+- Paths: Relative to vault root (e.g., `projects/work`)
+
+**Example Setup:**
+
+1. Create mapping: `daily-notes` → `calendar`
+2. Create mapping: `daily-notes/2024` → `calendar-days`
+3. Files in `daily-notes/2024/` will show `calendar-days`
+4. Files in `daily-notes/2023/` will show `calendar`
+
+### Priority Order
+
+When multiple association methods are enabled, the plugin uses this priority order:
+
+1. **Frontmatter** - If the file has an icon property
+2. **Tags** - If the file has tags with icon mappings (first matching tag by priority)
+3. **Folders** - If the file is in a folder with an icon mapping (deepest folder wins)
+
+### Rendering Locations
+
+Control where icons appear in the Obsidian interface:
+
+#### Wikilinks
+
+Icons appear next to wikilinks in:
+
+- **Reading Mode**: Next to rendered links
+- **Live Preview Mode**: Inside the brackets `[[icon filename]]`
+- **Autofill Suggestions**: In the dropdown when typing `[[`
+
+Toggle: Settings → "Render in wikilinks"
+
+#### File View
+
+Icons appear in:
+
+- **Tab Headers**: Next to the filename in editor tabs
+- **Inline Titles**: At the top of the editor
+
+Toggle: Settings → "Render in file view"
+
+#### File Lists
+
+Icons appear in:
+
+- **File Explorer**: Next to files in the sidebar
+- **Search Results**: Next to matching files
+- **Other File Lists**: Any built-in view that lists files
+
+Toggle: Settings → "Render in file lists"
+
+## Settings Reference
+
+### Rendering Locations
+
+| Setting              | Description                                                   | Default |
+| -------------------- | ------------------------------------------------------------- | ------- |
+| Render in wikilinks  | Show icons next to wikilinks in reading and live preview mode | ON      |
+| Render in file view  | Show icons in tab headers and inline titles                   | ON      |
+| Render in file lists | Show icons in file explorer and search results                | ON      |
+
+### Icon Association Methods
+
+#### Frontmatter
+
+| Setting                   | Description                                     | Default |
+| ------------------------- | ----------------------------------------------- | ------- |
+| Enable frontmatter        | Allow specifying icons via frontmatter property | ON      |
+| Frontmatter property name | The property to read icon names from            | `icon`  |
+
+#### Tags
+
+| Setting      | Description                                | Default |
+| ------------ | ------------------------------------------ | ------- |
+| Enable tags  | Allow associating icons with tags          | OFF     |
+| Tag Mappings | List of tag → icon associations (sortable) | Empty   |
+
+**Tag Mapping Controls:**
+
+- **↑/↓ Arrows**: Reorder priority (top = highest priority)
+- **Icon Preview**: Shows the current icon (for visual reference)
+- **🗑️ Delete**: Remove mapping
+
+#### Folders
+
+| Setting         | Description                               | Default |
+| --------------- | ----------------------------------------- | ------- |
+| Enable folders  | Allow associating icons with folder paths | OFF     |
+| Folder Mappings | List of folder path → icon associations   | Empty   |
+
+**Folder Mapping Controls:**
+
+- **Icon Preview**: Shows the current icon (for visual reference)
+- **🗑️ Delete**: Remove mapping
+
+## Finding Icon Names
+
+### Using the Icon Picker
+
+1. Open plugin settings
+2. Add a new tag or folder mapping
+3. Click the "Pick" button (or icon button if already set)
+4. Search for an icon by name
+5. Click to select
+
+**Note:** The icon picker displays all available icons supported by Obsidian. You can also manually type any icon name if you know it.
+
+Browse all available Lucide icons at: [lucide.dev/icons](https://lucide.dev/icons)
+
+Common icon names:
+
+- `home`, `folder`, `file`, `book`, `book-open`
+- `calendar`, `calendar-days`, `clock`, `timer`
+- `star`, `heart`, `bookmark`, `flag`
+- `check`, `check-circle`, `x`, `alert-circle`
+- `settings`, `user`, `users`, `mail`
+- `code`, `terminal`, `database`, `server`
+
+## Troubleshooting
+
+### Icons not appearing
+
+**Check the following:**
+
+1. The association method is enabled (frontmatter/tags/folders)
+2. The rendering location is enabled (wikilinks/file view/file lists)
+3. The icon name is valid (use the icon picker or check [lucide.dev](https://lucide.dev))
+4. The frontmatter property name matches your setting
+5. For folders, check that the path is relative to vault root
+6. Try reloading Obsidian (Cmd/Ctrl + R)
+
+### Wrong icon showing
+
+**The priority order is:**
+
+1. Frontmatter (highest)
+2. Tags (by order in settings)
+3. Folders (deepest folder)
+
+Check which method is providing the icon and adjust accordingly.
+
+### Icons not updating after changes
+
+**Trigger a refresh by:**
+
+- Modifying the file (add/remove a space)
+- Reloading Obsidian (Cmd/Ctrl + R)
+- Toggling the plugin off and on
+
+### Performance issues
+
+The plugin uses intelligent caching and should be performant even with large vaults. If you experience slowdowns:
+
+1. Disable unused rendering locations
+2. Reduce the number of tag/folder mappings
+3. Report an issue on GitHub with your vault size and usage details
+
+## Development
+
+### Setup
 
 ```bash
 npm install
 ```
 
-### 4. Configure Your Plugin
-
-Update the following files with your plugin information:
-
-- `src/manifest.json` - Plugin ID, name, description, author
-- `package.json` - Package name, description, author
-- `LICENSE` - Your name and year
-
-### 5. Set Up Development Environment
-
-Create a `.env` file in the root directory:
-
-```bash
-cp .env.example .env
-```
-
-Edit `.env` and set your vault plugin path:
-
-```
-VAULT_PLUGIN_PATH=/path/to/your/vault/.obsidian/plugins/your-plugin-id
-```
-
-**Example:**
-
-```
-VAULT_PLUGIN_PATH=/Users/username/Documents/MyVault/.obsidian/plugins/my-plugin
-```
-
-### 6. Start Development
-
-```bash
-npm run dev
-```
-
-This will:
-
-- Watch for file changes
-- Automatically compile and copy files to your vault
-- Bundle all CSS files into a single `styles.css`
-
-You'll need to reload Obsidian to see changes (Cmd/Ctrl + R).
-
-### 7. Build for Production
+### Build
 
 ```bash
 npm run build
 ```
 
-This creates optimized production files in your vault's plugin directory.
+### Development Mode
 
-## Project Structure
-
-```
-.
-├── src/
-│   ├── main.ts          # Main plugin entry point
-│   ├── manifest.json    # Plugin manifest
-│   ├── types.ts         # Custom types and interfaces
-│   └── styles.css       # Optional: main styles (auto-bundled)
-├── .env                 # Environment variables (create from .env.example)
-├── .env.example         # Example environment configuration
-├── .eslintrc.json       # ESLint configuration
-├── .gitignore           # Git ignore rules
-├── .cursorignore        # Cursor ignore rules
-├── esbuild.config.mjs   # Build configuration
-├── package.json         # Package dependencies and scripts
-├── tsconfig.json        # TypeScript configuration
-├── version-bump.mjs     # Version management script
-└── versions.json        # Version compatibility tracking
+```bash
+npm run dev
 ```
 
-## CSS Bundling
+This watches for changes and copies files to your vault automatically.
 
-The template includes automatic CSS bundling. Any `.css` files in your `src/` directory will be automatically collected and bundled into a single `styles.css` file in your vault's plugin directory.
+## Contributing
 
-**Example:**
+Contributions are welcome! Please:
 
-```
-src/
-├── components/
-│   ├── button.css
-│   └── modal.css
-└── views/
-    └── sidebar.css
-```
-
-All these files will be bundled into a single `styles.css` with source comments for easy debugging.
-
-## Version Management
-
-To release a new version:
-
-1. Update the version in `package.json`
-2. Run `npm run version` to sync `manifest.json` and `versions.json`
-3. Commit the changes
-4. Create a git tag: `git tag -a 1.0.0 -m "Release 1.0.0"`
-5. Push the tag: `git push origin 1.0.0`
-
-The GitHub Action will automatically create a release with the built files.
-
-## Publishing Your Plugin
-
-### Automated Release (Recommended)
-
-When you push a git tag, the GitHub Action automatically:
-
-- Builds the plugin
-- Creates a GitHub release
-- Attaches `main.js`, `manifest.json`, and `styles.css`
-
-### Manual Release
-
-1. Run `npm run build`
-2. Copy these files from your vault's plugin directory:
-   - `main.js`
-   - `manifest.json`
-   - `styles.css`
-3. Create a release on GitHub and attach these files
-
-### Submit to Community Plugins
-
-Follow the [official Obsidian plugin submission guide](https://docs.obsidian.md/Plugins/Releasing/Submit+your+plugin).
-
-## Development Tips
-
-### Enable Hot Reload in Obsidian
-
-Install the [Hot-Reload plugin](https://github.com/pjeby/hot-reload) for automatic plugin reloading during development.
-
-### Debugging
-
-Use the Developer Console (Cmd/Ctrl + Shift + I) to view console logs and errors.
-
-### TypeScript Path Aliases
-
-The template includes a `@/*` path alias pointing to `src/*`:
-
-```typescript
-// Instead of
-import { MyClass } from "../../utils/myClass"
-
-// You can write
-import { MyClass } from "@/utils/myClass"
-```
-
-## Resources
-
-- [Obsidian API Documentation](https://docs.obsidian.md/Home)
-- [Obsidian Plugin Developer Docs](https://docs.obsidian.md/Plugins/Getting+started/Build+a+plugin)
-- [Obsidian API on GitHub](https://github.com/obsidianmd/obsidian-api)
-- [Community Plugins](https://github.com/obsidianmd/obsidian-releases/blob/master/community-plugins.json)
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Submit a pull request
 
 ## License
 
 MIT License - see [LICENSE](LICENSE) file for details.
+
+## Credits
+
+- Built with [Obsidian API](https://github.com/obsidianmd/obsidian-api)
+- Icons from [Lucide](https://lucide.dev) (ISC License)
+
+## Support
+
+- **Issues**: [GitHub Issues](https://github.com/iamJpRowan/obsidian-simple-icons/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/iamJpRowan/obsidian-simple-icons/discussions)
+
+---
+
+**Note**: This plugin only modifies how files are displayed in the UI. It does not modify your markdown files (except when you edit frontmatter yourself).
