@@ -11,15 +11,14 @@
 
 ## Quick Setup
 
-### 1. Clone into your test vault
+### 1. Clone the repository
 
 ```bash
-cd /path/to/your/test-vault/.obsidian/plugins
 git clone https://github.com/iamJpRowan/obsidian-simple-icons.git
 cd obsidian-simple-icons
 ```
 
-> **Tip**: Use a dedicated test vault, not your main vault, for development.
+> **Tip**: You can clone anywhere - the build process will copy files to your vault.
 
 ### 2. Install dependencies
 
@@ -29,20 +28,41 @@ npm install
 
 This installs TypeScript, esbuild, and other development dependencies.
 
-### 3. Start development mode
+### 3. Configure your vault path
+
+Copy the example environment file and update it:
+
+```bash
+cp .env.example .env
+# Then edit .env with your vault path
+```
+
+Or create a `.env` file directly:
+
+```bash
+echo "VAULT_PATH=/path/to/your/test-vault" > .env
+```
+
+Replace with the actual path to your Obsidian test vault. The plugin will automatically be built to `{VAULT_PATH}/.obsidian/plugins/simple-icons`.
+
+> **Tip**: Use a dedicated test vault, not your main vault, for development.
+
+### 4. Start development mode
 
 ```bash
 npm run dev
 ```
 
-This starts esbuild in watch mode. It will automatically rebuild the plugin whenever you save changes.
+This starts esbuild in watch mode. It will automatically rebuild the plugin and copy files to your vault whenever you save changes.
 
 **Output looks like:**
 ```
 [watch] build finished, watching for changes...
 ```
 
-### 4. Enable plugin in Obsidian
+The plugin files will be automatically copied to your vault's plugin directory.
+
+### 5. Enable plugin in Obsidian
 
 1. Open your test vault in Obsidian
 2. Go to **Settings** → **Community Plugins**
@@ -50,7 +70,7 @@ This starts esbuild in watch mode. It will automatically rebuild the plugin when
 4. Find **"Simple Icons"** in the list
 5. Toggle it **ON**
 
-### 5. Start developing!
+### 6. Start developing!
 
 You're all set! Here's the workflow:
 

@@ -25,8 +25,7 @@ Start here if you're contributing or customizing the plugin.
 ### Getting Started
 
 - **[Quick Dev Start Guide](GETTING-STARTED-DEV.md)** - ⭐ Start here for development
-- **[Contributing Guide](CONTRIBUTING.md)** - Quick contributing overview
-- **[Full Contributing Guide](docs/contributing.md)** - Detailed development guide
+- **[Contributing Guide](CONTRIBUTING.md)** - How to contribute to the project
 - **[Testing Guide](docs/testing.md)** - How to test your changes
 
 ### Understanding the Code
@@ -36,6 +35,7 @@ Start here if you're contributing or customizing the plugin.
   - [Renderer System](devlog/2024-11-03-renderer-system.md) - Multi-location rendering
   - [Icon Resolution](devlog/2024-11-03-icon-resolution.md) - Priority system
   - [Performance Optimization](devlog/2024-11-03-performance-optimization.md) - Caching and observers
+  - [Dev Automation Setup](devlog/2024-11-03-dev-automation-setup.md) - CI/CD and tooling
 
 ### Project History
 
@@ -64,7 +64,8 @@ devlog/
 ├── 2024-11-03-initial-architecture.md          # Foundation
 ├── 2024-11-03-renderer-system.md               # Rendering architecture
 ├── 2024-11-03-icon-resolution.md               # Priority system
-└── 2024-11-03-performance-optimization.md      # Performance work
+├── 2024-11-03-performance-optimization.md      # Performance work
+└── 2024-11-03-dev-automation-setup.md          # CI/CD and tooling
 ```
 
 ### Root Documentation Files

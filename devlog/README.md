@@ -18,6 +18,8 @@ This devlog serves as:
 - **[2024-11-03 - Renderer System](2024-11-03-renderer-system.md)** - Multi-location rendering architecture
 - **[2024-11-03 - Icon Resolution](2024-11-03-icon-resolution.md)** - Priority system and icon association logic
 - **[2024-11-03 - Performance Optimization](2024-11-03-performance-optimization.md)** - Caching and observer management
+- **[2024-11-03 - Dev Automation Setup](2024-11-03-dev-automation-setup.md)** - CI/CD, code quality tools, and release automation
+- **[2024-11-03 - VAULT_PATH Simplification](2024-11-03-vault-path-simplification.md)** - Simplified environment variable configuration
 
 ## Devlog Entry Format
 

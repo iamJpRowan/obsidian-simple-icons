@@ -12,12 +12,24 @@ import { fileURLToPath } from "url"
 dotenv.config()
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url))
-const outDir = process.env.VAULT_PLUGIN_PATH
 
-if (!outDir) {
-  console.error("Error: VAULT_PLUGIN_PATH environment variable is not set")
+// Determine output directory
+// Priority: VAULT_PLUGIN_PATH (for CI) > VAULT_PATH (for dev)
+let outDir
+
+if (process.env.VAULT_PLUGIN_PATH) {
+  // Direct path to plugin folder (used in CI/CD)
+  outDir = process.env.VAULT_PLUGIN_PATH
+} else if (process.env.VAULT_PATH) {
+  // Vault path - construct plugin directory
+  outDir = path.join(process.env.VAULT_PATH, ".obsidian", "plugins", "simple-icons")
+} else {
+  console.error("Error: Neither VAULT_PATH nor VAULT_PLUGIN_PATH is set")
   console.error(
-    "Please create a .env file with VAULT_PLUGIN_PATH=/path/to/vault/.obsidian/plugins/your-plugin"
+    "For development: Create a .env file with VAULT_PATH=/path/to/your/vault"
+  )
+  console.error(
+    "Example: VAULT_PATH=/Users/username/Documents/MyVault"
   )
   process.exit(1)
 }

@@ -1,36 +1,62 @@
-name: Release Obsidian plugin
+name: Release
 
 on:
   push:
     tags:
-      - "*"
+      - "v*.*.*"
 
 jobs:
-  build:
+  release:
     runs-on: ubuntu-latest
-
+    permissions:
+      contents: write
+    
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Use Node.js
-        uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: "18.x"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
 
       - name: Build plugin
         env:
           VAULT_PLUGIN_PATH: ./build
-        run: |
-          npm install
-          npm run build
+        run: npm run build
 
-      - name: Create release
+      - name: Generate changelog
+        id: changelog
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          
+          # Get previous tag
+          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          
+          # Generate changelog
+          echo "## Changes in v$VERSION" > RELEASE_NOTES.md
+          echo "" >> RELEASE_NOTES.md
+          
+          if [ -z "$PREV_TAG" ]; then
+            echo "Initial release" >> RELEASE_NOTES.md
+          else
+            echo "### Commits" >> RELEASE_NOTES.md
+            git log --pretty=format:"- %s (%h)" $PREV_TAG..HEAD >> RELEASE_NOTES.md
+          fi
+          
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          draft: false
+          prerelease: ${{ contains(github.ref, 'beta') || contains(github.ref, 'alpha') }}
+          body_path: RELEASE_NOTES.md
+          files: |
+            build/main.js
+            build/manifest.json
+            build/styles.css
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          tag="${GITHUB_REF#refs/tags/}"
-
-          gh release create "$tag" \
-            --title="$tag" \
-            --draft \
-            build/main.js build/manifest.json build/styles.css
