@@ -14,7 +14,7 @@
 
 import { App, PluginSettingTab, Setting, setIcon } from "obsidian"
 import SimpleIconsPlugin from "./main"
-import { FolderMapping, TagMapping } from "./types"
+import { FolderMapping } from "./types"
 import { TagMappingModal } from "./TagMappingModal"
 
 /**
@@ -216,7 +216,7 @@ export class SimpleIconsSettingTab extends PluginSettingTab {
       })
 
       const mappingCount = this.plugin.settings.tagMappings.length
-      const summaryText = summaryContainer.createEl("p", {
+      summaryContainer.createEl("p", {
         text: `${mappingCount} mapping${mappingCount !== 1 ? "s" : ""} configured`,
         cls: "tag-mapping-summary-text",
       })

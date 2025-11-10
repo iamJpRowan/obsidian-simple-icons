@@ -50,7 +50,7 @@ export class ObserverManager {
    * @param fn - The function to debounce
    * @param delay - The delay in milliseconds before calling the function (default: 100ms)
    */
-  debounce(key: string, fn: () => void, delay: number = 100): void {
+  debounce(key: string, fn: () => void, delay = 100): void {
     const existingTimer = this.debounceTimers.get(key)
     if (existingTimer) {
       clearTimeout(existingTimer)

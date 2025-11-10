@@ -34,7 +34,7 @@ export class TagMappingModal extends Modal {
   private plugin: SimpleIconsPlugin
   private mappings: TagMapping[]
   private filteredMappings: TagMapping[]
-  private searchQuery: string = ""
+  private searchQuery = ""
   private rows: MappingRow[] = []
   private draggedRow: MappingRow | null = null
   private dragOverIndex: number | null = null
@@ -96,6 +96,7 @@ export class TagMappingModal extends Modal {
    */
   private loadCommonIconNames(): void {
     // Try accessing Lucide library directly from global scope
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const lucide = (window as any).lucide || (globalThis as any).lucide
     
     if (lucide && lucide.icons) {
