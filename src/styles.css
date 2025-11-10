@@ -15,17 +15,18 @@
 /* Inline title wrapper - positions icon outside editable area */
 .inline-title-wrapper {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   gap: var(--size-2-2);
   width: 100%;
 }
 
-/* Ensure icon aligns properly with title text */
+/* Ensure icon aligns properly with title text - centered with first line */
 .inline-title-wrapper .file-icon {
   display: inline-flex;
   align-items: center;
   flex-shrink: 0;
   margin-right: 0;
+  margin-top: 0.1em;
 }
 
 /* Inline title icons should be larger */
