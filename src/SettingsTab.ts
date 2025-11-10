@@ -231,7 +231,9 @@ export class SimpleIconsSettingTab extends PluginSettingTab {
       // Manage button
       new Setting(containerEl)
         .setName("Manage tag mappings")
-        .setDesc("Open the tag mapping manager to add, edit, reorder, or delete mappings")
+        .setDesc(
+          "Open the tag mapping manager to add, edit, reorder, or delete mappings"
+        )
         .addButton(button =>
           button
             .setButtonText("Manage Tag Mappings")
@@ -243,7 +245,6 @@ export class SimpleIconsSettingTab extends PluginSettingTab {
         )
     }
   }
-
 
   /**
    * Adds settings for folder-based icon association

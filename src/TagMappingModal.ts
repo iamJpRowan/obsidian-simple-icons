@@ -65,12 +65,14 @@ export class TagMappingModal extends Modal {
   private loadVaultTags(): void {
     const tags = new Set<string>()
     const files = this.app.vault.getMarkdownFiles()
-    
+
     for (const file of files) {
       const metadata = this.app.metadataCache.getFileCache(file)
       if (metadata?.tags) {
         for (const tag of metadata.tags) {
-          const tagName = tag.tag.startsWith("#") ? tag.tag.substring(1) : tag.tag
+          const tagName = tag.tag.startsWith("#")
+            ? tag.tag.substring(1)
+            : tag.tag
           tags.add(tagName)
         }
       }
@@ -80,13 +82,15 @@ export class TagMappingModal extends Modal {
           : [metadata.frontmatter.tags]
         for (const tag of frontmatterTags) {
           if (typeof tag === "string") {
-            const tagName = tag.trim().startsWith("#") ? tag.trim().substring(1) : tag.trim()
+            const tagName = tag.trim().startsWith("#")
+              ? tag.trim().substring(1)
+              : tag.trim()
             if (tagName) tags.add(tagName)
           }
         }
       }
     }
-    
+
     this.allVaultTags = tags
   }
 
@@ -98,14 +102,16 @@ export class TagMappingModal extends Modal {
     // Try accessing Lucide library directly from global scope
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const lucide = (window as any).lucide || (globalThis as any).lucide
-    
+
     if (lucide && lucide.icons) {
       // Get all icon names from Lucide's icon registry
       this.commonIconNames = Object.keys(lucide.icons)
     } else {
       // Fallback: Empty array if Lucide isn't accessible
       this.commonIconNames = []
-      console.warn("Could not access Lucide icon library - icon suggestions will be limited")
+      console.warn(
+        "Could not access Lucide icon library - icon suggestions will be limited"
+      )
     }
   }
 
@@ -119,7 +125,7 @@ export class TagMappingModal extends Modal {
     // Header
     const header = this.contentEl.createDiv({ cls: "tag-mapping-modal-header" })
     header.createEl("h2", { text: "Tag Mappings" })
-    
+
     // Explanation text
     header.createEl("p", {
       text: "Tag mappings are checked in priority order. Drag items to reorder. Higher priority (lower number) takes precedence.",
@@ -127,14 +133,16 @@ export class TagMappingModal extends Modal {
     })
 
     // Search bar
-    const searchContainer = header.createDiv({ cls: "tag-mapping-search-container" })
+    const searchContainer = header.createDiv({
+      cls: "tag-mapping-search-container",
+    })
     this.searchInput = searchContainer.createEl("input", {
       type: "text",
       placeholder: "Search tag names or icon names...",
       cls: "tag-mapping-search-input",
     })
     this.searchInput.addEventListener("input", () => this.handleSearch())
-    this.searchInput.addEventListener("keydown", (e) => {
+    this.searchInput.addEventListener("keydown", e => {
       if (e.key === "Escape") {
         this.searchInput.value = ""
         this.handleSearch()
@@ -144,7 +152,7 @@ export class TagMappingModal extends Modal {
 
     // Toolbar
     const toolbar = this.contentEl.createDiv({ cls: "tag-mapping-toolbar" })
-    
+
     const addButton = toolbar.createEl("button", {
       text: "Add new",
       cls: "mod-cta",
@@ -152,7 +160,9 @@ export class TagMappingModal extends Modal {
     setIcon(addButton, "plus")
     addButton.addEventListener("click", () => this.addNewMapping())
 
-    const importExportContainer = toolbar.createDiv({ cls: "tag-mapping-import-export" })
+    const importExportContainer = toolbar.createDiv({
+      cls: "tag-mapping-import-export",
+    })
     const exportButton = importExportContainer.createEl("button", {
       cls: "tag-mapping-icon-btn",
       attr: { "aria-label": "Export", title: "Export mappings" },
@@ -190,13 +200,13 @@ export class TagMappingModal extends Modal {
     setTimeout(() => this.searchInput.focus(), 100)
 
     // Keyboard shortcuts
-    this.scope.register(["Ctrl", "Meta"], "f", (e) => {
+    this.scope.register(["Ctrl", "Meta"], "f", e => {
       e.preventDefault()
       this.searchInput.focus()
       this.searchInput.select()
     })
 
-    this.scope.register(["Ctrl", "Meta"], "n", (e) => {
+    this.scope.register(["Ctrl", "Meta"], "n", e => {
       e.preventDefault()
       this.addNewMapping()
     })
@@ -207,17 +217,17 @@ export class TagMappingModal extends Modal {
    */
   private handleSearch(): void {
     this.searchQuery = this.searchInput.value.toLowerCase().trim()
-    
+
     if (!this.searchQuery) {
       this.filteredMappings = [...this.mappings]
     } else {
       this.filteredMappings = this.mappings.filter(
-        (m) =>
+        m =>
           m.tag.toLowerCase().includes(this.searchQuery) ||
           m.icon.toLowerCase().includes(this.searchQuery)
       )
     }
-    
+
     this.renderMappings()
     this.updateStatusBar()
   }
@@ -228,7 +238,7 @@ export class TagMappingModal extends Modal {
   private renderMappings(): void {
     // Hide all suggestions before re-rendering
     this.hideAllSuggestions()
-    
+
     this.mappingsContainer.empty()
     this.rows = []
 
@@ -240,9 +250,9 @@ export class TagMappingModal extends Modal {
     this.filteredMappings.forEach((mapping, displayIndex) => {
       // Find the actual index in the full mappings array
       const actualIndex = this.mappings.findIndex(
-        (m) => m.tag === mapping.tag && m.icon === mapping.icon
+        m => m.tag === mapping.tag && m.icon === mapping.icon
       )
-      
+
       const row = this.createMappingRow(mapping, actualIndex, displayIndex)
       this.rows.push(row)
       this.mappingsContainer.appendChild(row.element)
@@ -256,19 +266,19 @@ export class TagMappingModal extends Modal {
     const emptyState = this.mappingsContainer.createDiv({
       cls: "tag-mapping-empty-state",
     })
-    
+
     emptyState.createEl("p", {
       text: this.searchQuery
         ? `No mappings found matching "${this.searchQuery}"`
         : "No tag mappings yet.",
     })
-    
+
     if (!this.searchQuery) {
       emptyState.createEl("p", {
         text: "Click 'Add New Mapping' to get started.",
         cls: "tag-mapping-empty-hint",
       })
-      
+
       // Show example
       const example = emptyState.createDiv({ cls: "tag-mapping-example" })
       example.createEl("span", { text: "#project" })
@@ -298,7 +308,7 @@ export class TagMappingModal extends Modal {
     const rowEl = document.createElement("div")
     rowEl.className = "tag-mapping-row"
     rowEl.setAttribute("data-index", actualIndex.toString())
-    
+
     if (this.draggedRow?.index === actualIndex) {
       rowEl.addClass("dragging")
     }
@@ -327,7 +337,7 @@ export class TagMappingModal extends Modal {
     tagInput.addEventListener("focus", () => {
       this.showTagSuggestions(tagInput, actualIndex)
     })
-    tagInput.addEventListener("blur", (e) => {
+    tagInput.addEventListener("blur", e => {
       // Delay hiding to allow clicking suggestions
       setTimeout(() => {
         this.hideTagSuggestions(actualIndex)
@@ -354,7 +364,7 @@ export class TagMappingModal extends Modal {
     iconInput.addEventListener("focus", () => {
       this.showIconSuggestions(iconInput, actualIndex)
     })
-    iconInput.addEventListener("blur", (e) => {
+    iconInput.addEventListener("blur", e => {
       setTimeout(() => {
         this.hideIconSuggestions(actualIndex)
       }, 200)
@@ -374,7 +384,7 @@ export class TagMappingModal extends Modal {
     })
     setIcon(moveTopButton, "arrow-up-to-line")
     moveTopButton.addEventListener("click", () => this.moveToTop(actualIndex))
-    moveTopButton.addEventListener("keydown", (e) => {
+    moveTopButton.addEventListener("keydown", e => {
       if (e.key === "Enter" || e.key === " ") {
         e.preventDefault()
         this.moveToTop(actualIndex)
@@ -387,8 +397,10 @@ export class TagMappingModal extends Modal {
       attr: { "aria-label": "Move to bottom", role: "button", tabindex: "0" },
     })
     setIcon(moveBottomButton, "arrow-down-to-line")
-    moveBottomButton.addEventListener("click", () => this.moveToBottom(actualIndex))
-    moveBottomButton.addEventListener("keydown", (e) => {
+    moveBottomButton.addEventListener("click", () =>
+      this.moveToBottom(actualIndex)
+    )
+    moveBottomButton.addEventListener("keydown", e => {
       if (e.key === "Enter" || e.key === " ") {
         e.preventDefault()
         this.moveToBottom(actualIndex)
@@ -401,8 +413,10 @@ export class TagMappingModal extends Modal {
       attr: { "aria-label": "Delete", role: "button", tabindex: "0" },
     })
     setIcon(deleteButton, "trash")
-    deleteButton.addEventListener("click", () => this.deleteMapping(actualIndex))
-    deleteButton.addEventListener("keydown", (e) => {
+    deleteButton.addEventListener("click", () =>
+      this.deleteMapping(actualIndex)
+    )
+    deleteButton.addEventListener("keydown", e => {
       if (e.key === "Enter" || e.key === " ") {
         e.preventDefault()
         this.deleteMapping(actualIndex)
@@ -413,7 +427,9 @@ export class TagMappingModal extends Modal {
     const dragHandle = rowEl.createDiv({ cls: "tag-mapping-drag-handle" })
     dragHandle.setAttribute("title", "Drag to reorder")
     dragHandle.innerHTML = "⋮⋮"
-    dragHandle.addEventListener("mousedown", (e) => this.startDrag(e, actualIndex))
+    dragHandle.addEventListener("mousedown", e =>
+      this.startDrag(e, actualIndex)
+    )
 
     return {
       mapping,
@@ -428,7 +444,7 @@ export class TagMappingModal extends Modal {
    * Shows tag suggestions dropdown
    */
   private showTagSuggestions(input: HTMLInputElement, index: number): void {
-    const row = this.rows.find((r) => r.index === index)
+    const row = this.rows.find(r => r.index === index)
     if (!row) return
 
     // Remove existing suggestions
@@ -450,7 +466,7 @@ export class TagMappingModal extends Modal {
     suggestionsEl.className = "tag-mapping-suggestions"
     suggestionsEl.style.position = "absolute"
     suggestionsEl.style.zIndex = "1000"
-    
+
     const inputRect = input.getBoundingClientRect()
     suggestionsEl.style.top = `${inputRect.bottom + 2}px`
     suggestionsEl.style.left = `${inputRect.left}px`
@@ -461,7 +477,7 @@ export class TagMappingModal extends Modal {
         cls: "tag-mapping-suggestion-item",
       })
       item.textContent = tag
-      item.addEventListener("mousedown", (e) => {
+      item.addEventListener("mousedown", e => {
         e.preventDefault()
         input.value = tag
         row.mapping.tag = tag
@@ -480,7 +496,7 @@ export class TagMappingModal extends Modal {
    * Hides tag suggestions dropdown
    */
   private hideTagSuggestions(index: number): void {
-    const row = this.rows.find((r) => r.index === index)
+    const row = this.rows.find(r => r.index === index)
     if (row?.tagSuggestionsEl) {
       row.tagSuggestionsEl.remove()
       row.tagSuggestionsEl = undefined
@@ -491,7 +507,7 @@ export class TagMappingModal extends Modal {
    * Shows icon suggestions dropdown
    */
   private showIconSuggestions(input: HTMLInputElement, index: number): void {
-    const row = this.rows.find((r) => r.index === index)
+    const row = this.rows.find(r => r.index === index)
     if (!row) return
 
     // Remove existing suggestions
@@ -512,7 +528,7 @@ export class TagMappingModal extends Modal {
     suggestionsEl.className = "tag-mapping-suggestions"
     suggestionsEl.style.position = "absolute"
     suggestionsEl.style.zIndex = "1000"
-    
+
     const inputRect = input.getBoundingClientRect()
     suggestionsEl.style.top = `${inputRect.bottom + 2}px`
     suggestionsEl.style.left = `${inputRect.left}px`
@@ -522,7 +538,7 @@ export class TagMappingModal extends Modal {
       const item = suggestionsEl.createDiv({
         cls: "tag-mapping-suggestion-item",
       })
-      
+
       const iconEl = item.createSpan({ cls: "tag-mapping-suggestion-icon" })
       try {
         setIcon(iconEl, iconName)
@@ -530,10 +546,10 @@ export class TagMappingModal extends Modal {
         // Icon not found, show placeholder
         iconEl.createEl("span", { text: "?", cls: "invalid-icon" })
       }
-      
+
       item.createSpan({ text: iconName, cls: "tag-mapping-suggestion-text" })
-      
-      item.addEventListener("mousedown", (e) => {
+
+      item.addEventListener("mousedown", e => {
         e.preventDefault()
         input.value = iconName
         row.mapping.icon = iconName
@@ -552,7 +568,7 @@ export class TagMappingModal extends Modal {
    * Hides icon suggestions dropdown
    */
   private hideIconSuggestions(index: number): void {
-    const row = this.rows.find((r) => r.index === index)
+    const row = this.rows.find(r => r.index === index)
     if (row?.iconSuggestionsEl) {
       row.iconSuggestionsEl.remove()
       row.iconSuggestionsEl = undefined
@@ -568,17 +584,21 @@ export class TagMappingModal extends Modal {
       this.hideIconSuggestions(row.index)
     })
     // Also clean up any orphaned suggestions in the DOM
-    document.querySelectorAll(".tag-mapping-suggestions").forEach(el => el.remove())
+    document
+      .querySelectorAll(".tag-mapping-suggestions")
+      .forEach(el => el.remove())
   }
 
   /**
    * Updates icon preview for a specific row
    */
   private updateIconPreview(index: number): void {
-    const row = this.rows.find((r) => r.index === index)
+    const row = this.rows.find(r => r.index === index)
     if (!row) return
 
-    const previewEl = row.element.querySelector(".tag-mapping-icon-preview") as HTMLElement
+    const previewEl = row.element.querySelector(
+      ".tag-mapping-icon-preview"
+    ) as HTMLElement
     if (previewEl) {
       this.updateIconPreviewElement(previewEl, row.mapping.icon)
     }
@@ -587,7 +607,10 @@ export class TagMappingModal extends Modal {
   /**
    * Updates icon preview element
    */
-  private updateIconPreviewElement(element: HTMLElement, iconName: string): void {
+  private updateIconPreviewElement(
+    element: HTMLElement,
+    iconName: string
+  ): void {
     element.empty()
     if (iconName) {
       try {
@@ -621,7 +644,7 @@ export class TagMappingModal extends Modal {
 
     // Focus the tag input of the new mapping
     setTimeout(() => {
-      const newRow = this.rows.find((r) => r.index === 0)
+      const newRow = this.rows.find(r => r.index === 0)
       if (newRow) {
         newRow.tagInput.focus()
       }
@@ -642,7 +665,7 @@ export class TagMappingModal extends Modal {
    */
   private moveToTop(index: number): void {
     if (index === 0) return
-    
+
     const mapping = this.mappings.splice(index, 1)[0]
     this.mappings.unshift(mapping)
     this.autoSave()
@@ -654,7 +677,7 @@ export class TagMappingModal extends Modal {
    */
   private moveToBottom(index: number): void {
     if (index === this.mappings.length - 1) return
-    
+
     const mapping = this.mappings.splice(index, 1)[0]
     this.mappings.push(mapping)
     this.autoSave()
@@ -668,7 +691,7 @@ export class TagMappingModal extends Modal {
     e.preventDefault()
     e.stopPropagation()
 
-    const row = this.rows.find((r) => r.index === index)
+    const row = this.rows.find(r => r.index === index)
     if (!row) return
 
     this.draggedRow = row
@@ -677,14 +700,14 @@ export class TagMappingModal extends Modal {
     const handleMouseMove = (e: MouseEvent) => {
       const rect = this.mappingsContainer.getBoundingClientRect()
       const y = e.clientY - rect.top
-      
+
       // Find which row we're over
       let overIndex = -1
       for (let i = 0; i < this.rows.length; i++) {
         const rowRect = this.rows[i].element.getBoundingClientRect()
         const rowTop = rowRect.top - rect.top
         const rowBottom = rowTop + rowRect.height
-        
+
         if (y >= rowTop && y <= rowBottom) {
           overIndex = i
           break
@@ -692,7 +715,7 @@ export class TagMappingModal extends Modal {
       }
 
       // Update drag over indicator
-      this.rows.forEach((r) => r.element.removeClass("drag-over"))
+      this.rows.forEach(r => r.element.removeClass("drag-over"))
       if (overIndex !== -1 && this.rows[overIndex].index !== index) {
         this.dragOverIndex = overIndex
         this.rows[overIndex].element.addClass("drag-over")
@@ -718,7 +741,7 @@ export class TagMappingModal extends Modal {
       }
 
       // Clean up
-      this.rows.forEach((r) => {
+      this.rows.forEach(r => {
         r.element.removeClass("dragging")
         r.element.removeClass("drag-over")
       })
@@ -800,8 +823,8 @@ export class TagMappingModal extends Modal {
     const input = document.createElement("input")
     input.type = "file"
     input.accept = ".json"
-    
-    input.addEventListener("change", async (e) => {
+
+    input.addEventListener("change", async e => {
       const file = (e.target as HTMLInputElement).files?.[0]
       if (!file) return
 
@@ -821,47 +844,49 @@ export class TagMappingModal extends Modal {
         }
 
         // Show preview and ask for merge or replace
-        const action = await new Promise<"merge" | "replace" | "cancel">((resolve) => {
-          const modal = new Modal(this.app)
-          modal.contentEl.createEl("h2", { text: "Import Tag Mappings" })
-          modal.contentEl.createEl("p", {
-            text: `Found ${imported.length} mappings to import.`,
-          })
-          modal.contentEl.createEl("p", {
-            text: `Current mappings: ${this.mappings.length}`,
-          })
+        const action = await new Promise<"merge" | "replace" | "cancel">(
+          resolve => {
+            const modal = new Modal(this.app)
+            modal.contentEl.createEl("h2", { text: "Import Tag Mappings" })
+            modal.contentEl.createEl("p", {
+              text: `Found ${imported.length} mappings to import.`,
+            })
+            modal.contentEl.createEl("p", {
+              text: `Current mappings: ${this.mappings.length}`,
+            })
 
-          const buttonContainer = modal.contentEl.createDiv({
-            cls: "tag-mapping-import-actions",
-          })
+            const buttonContainer = modal.contentEl.createDiv({
+              cls: "tag-mapping-import-actions",
+            })
 
-          const mergeButton = buttonContainer.createEl("button", {
-            text: "Merge",
-            cls: "mod-cta",
-          })
-          mergeButton.addEventListener("click", () => {
-            modal.close()
-            resolve("merge")
-          })
+            const mergeButton = buttonContainer.createEl("button", {
+              text: "Merge",
+              cls: "mod-cta",
+            })
+            mergeButton.addEventListener("click", () => {
+              modal.close()
+              resolve("merge")
+            })
 
-          const replaceButton = buttonContainer.createEl("button", {
-            text: "Replace All",
-          })
-          replaceButton.addEventListener("click", () => {
-            modal.close()
-            resolve("replace")
-          })
+            const replaceButton = buttonContainer.createEl("button", {
+              text: "Replace All",
+            })
+            replaceButton.addEventListener("click", () => {
+              modal.close()
+              resolve("replace")
+            })
 
-          const cancelButton = buttonContainer.createEl("button", {
-            text: "Cancel",
-          })
-          cancelButton.addEventListener("click", () => {
-            modal.close()
-            resolve("cancel")
-          })
+            const cancelButton = buttonContainer.createEl("button", {
+              text: "Cancel",
+            })
+            cancelButton.addEventListener("click", () => {
+              modal.close()
+              resolve("cancel")
+            })
 
-          modal.open()
-        })
+            modal.open()
+          }
+        )
 
         if (action === "cancel") return
 
@@ -870,7 +895,7 @@ export class TagMappingModal extends Modal {
         if (action === "merge") {
           for (const importedMapping of imported) {
             const existing = this.mappings.find(
-              (m) => m.tag.toLowerCase() === importedMapping.tag.toLowerCase()
+              m => m.tag.toLowerCase() === importedMapping.tag.toLowerCase()
             )
             if (existing) {
               duplicates.push(importedMapping)
@@ -879,47 +904,49 @@ export class TagMappingModal extends Modal {
         }
 
         if (duplicates.length > 0) {
-          const handleDuplicates = await new Promise<"skip" | "replace">((resolve) => {
-            const modal = new Modal(this.app)
-            modal.contentEl.createEl("h2", { text: "Duplicate Tags Found" })
-            modal.contentEl.createEl("p", {
-              text: `Found ${duplicates.length} duplicate tag(s). How would you like to handle them?`,
-            })
+          const handleDuplicates = await new Promise<"skip" | "replace">(
+            resolve => {
+              const modal = new Modal(this.app)
+              modal.contentEl.createEl("h2", { text: "Duplicate Tags Found" })
+              modal.contentEl.createEl("p", {
+                text: `Found ${duplicates.length} duplicate tag(s). How would you like to handle them?`,
+              })
 
-            const list = modal.contentEl.createEl("ul")
-            duplicates.forEach((d) => {
-              list.createEl("li", { text: `#${d.tag} → ${d.icon}` })
-            })
+              const list = modal.contentEl.createEl("ul")
+              duplicates.forEach(d => {
+                list.createEl("li", { text: `#${d.tag} → ${d.icon}` })
+              })
 
-            const buttonContainer = modal.contentEl.createDiv({
-              cls: "tag-mapping-import-actions",
-            })
+              const buttonContainer = modal.contentEl.createDiv({
+                cls: "tag-mapping-import-actions",
+              })
 
-            const skipButton = buttonContainer.createEl("button", {
-              text: "Skip Duplicates",
-              cls: "mod-cta",
-            })
-            skipButton.addEventListener("click", () => {
-              modal.close()
-              resolve("skip")
-            })
+              const skipButton = buttonContainer.createEl("button", {
+                text: "Skip Duplicates",
+                cls: "mod-cta",
+              })
+              skipButton.addEventListener("click", () => {
+                modal.close()
+                resolve("skip")
+              })
 
-            const replaceButton = buttonContainer.createEl("button", {
-              text: "Replace Existing",
-            })
-            replaceButton.addEventListener("click", () => {
-              modal.close()
-              resolve("replace")
-            })
+              const replaceButton = buttonContainer.createEl("button", {
+                text: "Replace Existing",
+              })
+              replaceButton.addEventListener("click", () => {
+                modal.close()
+                resolve("replace")
+              })
 
-            modal.open()
-          })
+              modal.open()
+            }
+          )
 
           if (handleDuplicates === "replace") {
             // Remove existing duplicates
-            duplicates.forEach((d) => {
+            duplicates.forEach(d => {
               const index = this.mappings.findIndex(
-                (m) => m.tag.toLowerCase() === d.tag.toLowerCase()
+                m => m.tag.toLowerCase() === d.tag.toLowerCase()
               )
               if (index !== -1) {
                 this.mappings.splice(index, 1)
@@ -930,7 +957,7 @@ export class TagMappingModal extends Modal {
             imported.forEach((imp, idx) => {
               if (
                 duplicates.some(
-                  (d) => d.tag.toLowerCase() === imp.tag.toLowerCase()
+                  d => d.tag.toLowerCase() === imp.tag.toLowerCase()
                 )
               ) {
                 imported.splice(idx, 1)
@@ -970,4 +997,3 @@ export class TagMappingModal extends Modal {
     this.contentEl.empty()
   }
 }
-

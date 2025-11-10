@@ -184,7 +184,6 @@ body .modal-container:has(.tag-mapping-modal) {
   background-color: var(--background-modifier-hover);
 }
 
-
 .tag-mapping-priority {
   min-width: 35px;
   flex-shrink: 0;
