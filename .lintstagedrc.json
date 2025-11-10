@@ -1,9 +1,9 @@
 {
   "*.ts": [
     "eslint --fix",
-    "prettier --write"
+    "npx prettier --write"
   ],
   "*.css": [
-    "prettier --write"
+    "npx prettier --write"
   ]
 }
