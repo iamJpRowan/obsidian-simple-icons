@@ -12,7 +12,36 @@
   height: var(--icon-xs);
 }
 
+/* Inline title wrapper - positions icon outside editable area */
+.inline-title-wrapper {
+  display: flex;
+  align-items: center;
+  gap: var(--size-2-2);
+  width: 100%;
+}
+
+/* Ensure icon aligns properly with title text */
+.inline-title-wrapper .file-icon {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  margin-right: 0;
+}
+
 /* Inline title icons should be larger */
+.inline-title-wrapper .file-icon svg {
+  width: var(--icon-l);
+  height: var(--icon-l);
+  stroke-width: var(--icon-s-stroke-width);
+}
+
+/* Ensure the title itself takes remaining space */
+.inline-title-wrapper .inline-title {
+  flex: 1;
+  margin: 0;
+}
+
+/* Fallback for icons inside inline-title (for backwards compatibility) */
 .inline-title .file-icon svg {
   width: var(--icon-l);
   height: var(--icon-l);

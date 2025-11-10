@@ -139,6 +139,7 @@ export class IconRenderer extends Component {
    */
   onunload(): void {
     this.observers.cleanup()
+    this.fileViewRenderer.cleanup()
   }
 
   /**

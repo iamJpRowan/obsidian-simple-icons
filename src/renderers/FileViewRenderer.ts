@@ -25,6 +25,7 @@ export class FileViewRenderer {
   private app: App
   private iconResolver: IconResolver
   private settings: PluginSettings
+  private titleObserver: MutationObserver | null = null
 
   constructor(app: App, iconResolver: IconResolver, settings: PluginSettings) {
     this.app = app
@@ -42,6 +43,7 @@ export class FileViewRenderer {
    * Registers listeners for active-leaf-change and layout-change events to
    * automatically update icons when files are opened, closed, or switched.
    * Also performs an initial render to add icons to currently visible files.
+   * Sets up observer to restore icons when titles are replaced.
    */
   initialize(app: App): void {
     if (!this.settings.renderInFileView) return
@@ -55,8 +57,21 @@ export class FileViewRenderer {
       setTimeout(() => this.updateFileViewIcons(), 100)
     })
 
+    // Set up observer to detect when titles are replaced and restore icons
+    this.setupTitleReplacementObserver()
+
     // Single initial render
     setTimeout(() => this.updateFileViewIcons(), 200)
+  }
+
+  /**
+   * Cleans up observers when plugin unloads
+   */
+  cleanup(): void {
+    if (this.titleObserver) {
+      this.titleObserver.disconnect()
+      this.titleObserver = null
+    }
   }
 
   /**
@@ -168,6 +183,7 @@ export class FileViewRenderer {
    *
    * Updates the icon for the current file's inline title in the editor view.
    * The title element is already provided from the DOM query.
+   * Skips updates when the title is being edited to prevent cursor position issues.
    *
    * @param title - The inline title element to update
    */
@@ -180,15 +196,89 @@ export class FileViewRenderer {
 
     const iconName = this.iconResolver.getIconForFile(file)
 
-    // Remove existing icon
-    const existingIcon = title.querySelector(".file-icon")
+    // Find or create a wrapper container outside the editable title
+    let wrapper = title.parentElement
+    if (!wrapper || !wrapper.classList.contains("inline-title-wrapper")) {
+      // Create wrapper if it doesn't exist
+      wrapper = document.createElement("div")
+      wrapper.addClass("inline-title-wrapper")
+      title.parentNode?.insertBefore(wrapper, title)
+      wrapper.appendChild(title)
+    }
+
+    // Remove existing icon from wrapper (not from title)
+    const existingIcon = wrapper.querySelector(".file-icon")
     if (existingIcon) {
       existingIcon.remove()
     }
 
+    // Add icon to wrapper, before the title (outside the editable area)
     if (iconName) {
       const iconEl = IconElementFactory.createIconElement(iconName)
-      title.prepend(iconEl)
+      wrapper.insertBefore(iconEl, title)
     }
+  }
+
+  /**
+   * Sets up a MutationObserver to detect when inline titles are replaced
+   * and restore the wrapper/icon structure
+   *
+   * When Obsidian replaces the title element during editing, we need to
+   * restore the wrapper and icon to maintain the icon display.
+   */
+  private setupTitleReplacementObserver(): void {
+    this.titleObserver = new MutationObserver(mutations => {
+      for (const mutation of mutations) {
+        // Check for removed nodes - if a title was removed, check if we need to restore
+        if (mutation.type === "childList" && mutation.removedNodes.length > 0) {
+          for (const removedNode of Array.from(mutation.removedNodes)) {
+            if (
+              removedNode instanceof HTMLElement &&
+              removedNode.classList.contains("inline-title")
+            ) {
+              // Title was removed - check if a new one appeared
+              setTimeout(() => {
+                if (mutation.target instanceof Element) {
+                  const newTitle = mutation.target.querySelector(
+                    ".inline-title"
+                  ) as HTMLElement
+                  if (newTitle) {
+                    // New title appeared, restore icon
+                    this.updateInlineTitleIcon(newTitle)
+                  }
+                }
+              }, 50)
+            }
+          }
+        }
+
+        // Check for added nodes - if a new title appears without wrapper, add it
+        if (mutation.type === "childList" && mutation.addedNodes.length > 0) {
+          for (const addedNode of Array.from(mutation.addedNodes)) {
+            if (addedNode instanceof HTMLElement) {
+              const title = addedNode.classList.contains("inline-title")
+                ? (addedNode as HTMLElement)
+                : (addedNode.querySelector?.(".inline-title") as HTMLElement)
+
+              if (
+                title &&
+                !title.parentElement?.classList.contains("inline-title-wrapper")
+              ) {
+                // New title without wrapper - add wrapper and icon
+                setTimeout(() => {
+                  this.updateInlineTitleIcon(title)
+                }, 50)
+              }
+            }
+          }
+        }
+      }
+    })
+
+    // Observe the document for title replacements
+    this.titleObserver.observe(document.body, {
+      childList: true,
+      subtree: true,
+    })
   }
 }
