@@ -1,6 +1,10 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
+# Run lint-staged first to auto-fix formatting and linting issues
 npx lint-staged
+
+# Then run all CI checks to ensure nothing breaks
+npm run pre-commit:check || exit 1
 
 
