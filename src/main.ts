@@ -16,6 +16,7 @@ import { createEditorExtension, triggerIconRefresh } from "./EditorExtension"
 import { IconRenderer } from "./IconRenderer"
 import { IconResolver } from "./IconResolver"
 import { SimpleIconsSettingTab } from "./SettingsTab"
+import { TagMappingModal } from "./TagMappingModal"
 import { DEFAULT_SETTINGS, PluginSettings } from "./types"
 
 /**
@@ -112,6 +113,16 @@ export default class SimpleIconsPlugin extends Plugin {
 
     // Add settings tab
     this.addSettingTab(new SimpleIconsSettingTab(this.app, this))
+
+    // Add command palette command
+    this.addCommand({
+      id: "manage-tag-mappings",
+      name: "Simple Icons: Manage Tag Mappings",
+      callback: () => {
+        const modal = new TagMappingModal(this.app, this)
+        modal.open()
+      },
+    })
   }
 
   /**

@@ -88,7 +88,7 @@ export function createEditorExtension(app: App, iconResolver: IconResolver) {
      */
     class {
       decorations: DecorationSet
-      previousRefreshState: number = 0
+      previousRefreshState = 0
 
       /**
        * Initialize the plugin with initial decorations
