@@ -15,6 +15,7 @@
 import { App, PluginSettingTab, Setting, setIcon } from "obsidian"
 import SimpleIconsPlugin from "./main"
 import { FolderMapping, TagMapping } from "./types"
+import { TagMappingModal } from "./TagMappingModal"
 
 /**
  * Settings tab for configuring Simple Icons plugin
@@ -181,9 +182,8 @@ export class SimpleIconsSettingTab extends PluginSettingTab {
   /**
    * Adds settings for tag-based icon association
    *
-   * Creates a toggle to enable/disable tag icons and displays all existing
-   * tag mappings. Each mapping can be edited, reordered, or deleted.
-   * The "Add tag mapping" button creates new mappings.
+   * Creates a toggle to enable/disable tag icons and displays a summary
+   * of existing mappings with a button to open the tag mapping modal.
    *
    * @param containerEl - The container element to add settings to
    */
@@ -206,144 +206,44 @@ export class SimpleIconsSettingTab extends PluginSettingTab {
 
     if (this.plugin.settings.enableTags) {
       containerEl.createEl("p", {
-        text: "Tag mappings are checked in order. Drag to reorder priority.",
+        text: "Tag mappings are checked in priority order. Higher priority mappings appear first.",
         cls: "setting-item-description",
       })
 
-      // Add new tag mapping
-      new Setting(containerEl)
-        .setName("Add tag mapping")
-        .setDesc("Create a new tag to icon mapping")
-        .addButton(button =>
-          button.setButtonText("Add mapping").onClick(() => {
-            this.plugin.settings.tagMappings.push({ tag: "", icon: "" })
-            this.plugin.saveSettings()
-            this.display()
-          })
-        )
-
-      // Display existing mappings
-      this.plugin.settings.tagMappings.forEach((mapping, index) => {
-        this.addTagMappingRow(containerEl, mapping, index)
+      // Summary section
+      const summaryContainer = containerEl.createDiv({
+        cls: "tag-mapping-summary",
       })
+
+      const mappingCount = this.plugin.settings.tagMappings.length
+      const summaryText = summaryContainer.createEl("p", {
+        text: `${mappingCount} mapping${mappingCount !== 1 ? "s" : ""} configured`,
+        cls: "tag-mapping-summary-text",
+      })
+
+      if (mappingCount === 0) {
+        summaryContainer.createEl("p", {
+          text: "No tag mappings yet. Click 'Manage Tag Mappings' to get started.",
+          cls: "tag-mapping-summary-empty",
+        })
+      }
+
+      // Manage button
+      new Setting(containerEl)
+        .setName("Manage tag mappings")
+        .setDesc("Open the tag mapping manager to add, edit, reorder, or delete mappings")
+        .addButton(button =>
+          button
+            .setButtonText("Manage Tag Mappings")
+            .setCta()
+            .onClick(() => {
+              const modal = new TagMappingModal(this.app, this.plugin)
+              modal.open()
+            })
+        )
     }
   }
 
-  /**
-   * Creates a single row for editing a tag mapping
-   *
-   * Each row includes:
-   * - Text input for the tag name
-   * - Text input for the icon name
-   * - Preview button showing the icon
-   * - Move up/down buttons for reordering
-   * - Delete button
-   *
-   * @param containerEl - The container element to add the row to
-   * @param mapping - The tag mapping being edited
-   * @param index - The index of this mapping in the array
-   */
-  private addTagMappingRow(
-    containerEl: HTMLElement,
-    mapping: TagMapping,
-    index: number
-  ): void {
-    let previewButton: any
-
-    const setting = new Setting(containerEl)
-      .addText(text =>
-        text
-          .setPlaceholder("tag-name")
-          .setValue(mapping.tag)
-          .onChange(async value => {
-            this.plugin.settings.tagMappings[index].tag = value
-            await this.plugin.saveSettings()
-            this.plugin.iconResolver.clearCache()
-          })
-      )
-      .addText(text => {
-        text
-          .setPlaceholder("icon-name")
-          .setValue(mapping.icon)
-          .onChange(async value => {
-            this.plugin.settings.tagMappings[index].icon = value
-            await this.plugin.saveSettings()
-            this.plugin.iconResolver.clearCache()
-
-            // Update icon preview in place without re-rendering the entire UI
-            if (value) {
-              setIcon(previewButton.buttonEl, value)
-              previewButton.setTooltip(
-                "Icon preview - type icon name in field above"
-              )
-            } else {
-              previewButton.setButtonText("Icon")
-              previewButton.setTooltip(
-                "Type icon name in field above, e.g. 'home', 'folder', 'star'"
-              )
-            }
-          })
-        text.inputEl.addClass("icon-name-input")
-      })
-      .addButton(button => {
-        previewButton = button
-        if (mapping.icon) {
-          setIcon(button.buttonEl, mapping.icon)
-          button.setTooltip("Icon preview - type icon name in field above")
-        } else {
-          button.setButtonText("Icon")
-          button.setTooltip(
-            "Type icon name in field above, e.g. 'home', 'folder', 'star'"
-          )
-        }
-        button.setDisabled(true) // Display only
-      })
-      .addExtraButton(button =>
-        button
-          .setIcon("arrow-up")
-          .setTooltip("Move up")
-          .onClick(async () => {
-            if (index > 0) {
-              const temp = this.plugin.settings.tagMappings[index]
-              this.plugin.settings.tagMappings[index] =
-                this.plugin.settings.tagMappings[index - 1]
-              this.plugin.settings.tagMappings[index - 1] = temp
-              await this.plugin.saveSettings()
-              this.plugin.iconResolver.clearCache()
-              this.display()
-            }
-          })
-      )
-      .addExtraButton(button =>
-        button
-          .setIcon("arrow-down")
-          .setTooltip("Move down")
-          .onClick(async () => {
-            if (index < this.plugin.settings.tagMappings.length - 1) {
-              const temp = this.plugin.settings.tagMappings[index]
-              this.plugin.settings.tagMappings[index] =
-                this.plugin.settings.tagMappings[index + 1]
-              this.plugin.settings.tagMappings[index + 1] = temp
-              await this.plugin.saveSettings()
-              this.plugin.iconResolver.clearCache()
-              this.display()
-            }
-          })
-      )
-      .addExtraButton(button =>
-        button
-          .setIcon("trash")
-          .setTooltip("Delete")
-          .onClick(async () => {
-            this.plugin.settings.tagMappings.splice(index, 1)
-            await this.plugin.saveSettings()
-            this.plugin.iconResolver.clearCache()
-            this.display()
-          })
-      )
-
-    setting.infoEl.remove()
-  }
 
   /**
    * Adds settings for folder-based icon association
